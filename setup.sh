@@ -100,13 +100,15 @@ case "$MODE" in
     ;;
   tailscale)
     COMPOSE_FILE_VAL="docker-compose.yml:docker-compose.tailscale.yml"
-    # PUBLIC_URL points at the mesh hostname; Tailscale will issue the
-    # actual cert once the sidecar joins, and your tailnet domain will
-    # be visible in the Tailscale admin console.
-    PUBLIC_URL_VAL="https://${TS_HOSTNAME}.<your-tailnet>.ts.net:3100"
-    TUI_URL="https://${TS_HOSTNAME}.<your-tailnet>.ts.net:4860  (mesh)  |  http://127.0.0.1:4860  (this host)"
-    DASH_URL="https://${TS_HOSTNAME}.<your-tailnet>.ts.net:9119  (mesh)  |  http://127.0.0.1:9119  (this host)"
-    PAPER_URL="https://${TS_HOSTNAME}.<your-tailnet>.ts.net:3100  (mesh)  |  http://127.0.0.1:3100  (this host)"
+    # PUBLIC_URL must be a valid URL at boot — Paperclip's better-auth
+    # rejects invalid URLs and refuses to start. We default to localhost
+    # so the stack boots cleanly; install.sh then queries the live
+    # Tailscale sidecar for the real <hostname>.<tailnet>.ts.net FQDN
+    # and rewrites PAPERCLIP_PUBLIC_URL + restarts paperclip.
+    PUBLIC_URL_VAL="http://localhost:3100"
+    TUI_URL="(mesh)  https://${TS_HOSTNAME}.<your-tailnet>.ts.net:4860  |  (this host)  http://127.0.0.1:4860"
+    DASH_URL="(mesh)  https://${TS_HOSTNAME}.<your-tailnet>.ts.net:9119  |  (this host)  http://127.0.0.1:9119"
+    PAPER_URL="(mesh)  https://${TS_HOSTNAME}.<your-tailnet>.ts.net:3100  |  (this host)  http://127.0.0.1:3100"
     ;;
   traefik)
     COMPOSE_FILE_VAL="docker-compose.yml:docker-compose.traefik.yml"

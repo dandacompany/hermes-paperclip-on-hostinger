@@ -29,5 +29,30 @@ cd "$INSTALL_DIR"
 
 echo "==> starting compose stack"
 docker compose up -d
+
+# ── Tailscale post-boot: rewrite PAPERCLIP_PUBLIC_URL with the real
+#    <hostname>.<tailnet>.ts.net once the sidecar has joined. This
+#    avoids a chicken-and-egg problem where the sidecar needs the
+#    auth key to find out its tailnet name, but Paperclip needs that
+#    URL at its own boot time.
+if grep -q "docker-compose.tailscale.yml" .env 2>/dev/null; then
+  echo "==> waiting for Tailscale sidecar to register..."
+  for i in $(seq 1 30); do
+    FQDN=$(docker compose exec -T tailscale sh -c 'tailscale status --json 2>/dev/null' \
+      | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('Self',{}).get('DNSName','').rstrip('.'))" 2>/dev/null || true)
+    [ -n "$FQDN" ] && break
+    sleep 2
+  done
+  if [ -n "$FQDN" ]; then
+    echo "==> tailnet FQDN: $FQDN"
+    sed -i.bak "s|^PAPERCLIP_PUBLIC_URL=.*|PAPERCLIP_PUBLIC_URL=https://${FQDN}:3100|" .env && rm .env.bak
+    echo "==> restarting paperclip with mesh PUBLIC_URL"
+    docker compose up -d paperclip >/dev/null 2>&1
+  else
+    echo "==> WARN: could not determine tailnet FQDN within 60s."
+    echo "    Run later: ./scripts/refresh-tailnet.sh"
+  fi
+fi
+
 echo
 echo "Done. Tail logs with: (cd $PWD && docker compose logs -f)"
