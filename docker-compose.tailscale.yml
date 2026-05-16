@@ -1,0 +1,74 @@
+# Tailscale mode — same 127.0.0.1 host bindings as local mode, PLUS a
+# Tailscale sidecar that joins the project bridge network and exposes
+# the three services to authenticated mesh members.
+#
+# Design decision: the host running this stack does NOT need to be a
+# mesh member. The host accesses its own containers via 127.0.0.1
+# (just like local mode); the sidecar is purely an outward gateway
+# for other mesh devices (laptops, phones, teammates).
+#
+# This sidesteps Docker Desktop's host-network limitation on macOS
+# and Windows — those hosts can't join a container-side mesh, but
+# they don't need to. They reach their own containers locally.
+#
+# Use this for: personal + team, private. Identical config for
+# laptops and VPSes — the "where" doesn't matter, the "who can reach"
+# is mesh membership.
+#
+# Bootstrap once before `docker compose up -d`:
+#   1. https://login.tailscale.com/admin/settings/keys → generate auth key
+#   2. setup.sh handles the rest (writes TS_AUTHKEY, TS_HOSTNAME into .env)
+#
+# After `docker compose up -d`:
+#   - This host:     http://127.0.0.1:9119  (dashboard)
+#                    http://127.0.0.1:4860  (tui)
+#                    http://127.0.0.1:3100  (paperclip)
+#   - Mesh members:  https://<TS_HOSTNAME>.<tailnet>.ts.net:9119  (dashboard)
+#                    https://<TS_HOSTNAME>.<tailnet>.ts.net:4860  (tui)
+#                    https://<TS_HOSTNAME>.<tailnet>.ts.net:3100  (paperclip)
+
+services:
+  # Same 127.0.0.1 host bindings as local mode — host owner accesses
+  # containers without going through the mesh.
+  hermes-tui:
+    ports:
+      - "127.0.0.1:4860:4860"
+
+  hermes-dashboard:
+    ports:
+      - "127.0.0.1:9119:9119"
+
+  paperclip:
+    ports:
+      - "127.0.0.1:3100:3100"
+
+  # Tailscale sidecar — outward gateway for non-host mesh members.
+  tailscale:
+    image: tailscale/tailscale:latest
+    hostname: ${TS_HOSTNAME:-hermes-paperclip}
+    restart: unless-stopped
+    environment:
+      TS_AUTHKEY: ${TS_AUTHKEY:?TS_AUTHKEY required — generate one at https://login.tailscale.com/admin/settings/keys}
+      TS_STATE_DIR: /var/lib/tailscale
+      TS_USERSPACE: "false"
+      TS_SERVE_CONFIG: /config/serve.json
+      TS_EXTRA_ARGS: "--ssh --accept-routes"
+    volumes:
+      - tailscale-state:/var/lib/tailscale
+      - ./tailscale/serve.json:/config/serve.json:ro
+      - /dev/net/tun:/dev/net/tun
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    depends_on:
+      hermes-dashboard:
+        condition: service_started
+      hermes-tui:
+        condition: service_started
+      paperclip:
+        condition: service_started
+    networks:
+      - default
+
+volumes:
+  tailscale-state:

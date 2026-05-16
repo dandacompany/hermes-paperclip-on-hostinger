@@ -1,0 +1,144 @@
+# Base stack — no exposure. Pair this file with exactly one of:
+#   docker-compose.local.yml      → bind to host 127.0.0.1
+#   docker-compose.traefik.yml    → public HTTPS via existing Traefik
+#   docker-compose.cloudflared.yml→ public HTTPS via Cloudflare Tunnel
+#
+# setup.sh writes the chosen COMPOSE_FILE entry into .env so plain
+# `docker compose up -d` picks up both files automatically.
+name: ${COMPOSE_PROJECT_NAME:-hermes-paperclip}
+
+services:
+  # ── Init: prepare data ownership before long-running services run.
+  #     Hermes data needs UID 10000, Paperclip data needs UID 1000 (node).
+  hermes-init:
+    image: ghcr.io/hostinger/hvps-hermes-agent:latest
+    user: "0:0"
+    entrypoint: ["sh", "-c"]
+    command:
+      - |
+        set -e
+        mkdir -p /opt/data
+        chown -R 10000:10000 /opt/data
+        echo "hermes-init: /opt/data owned by 10000:10000"
+    volumes:
+      - hermes-data:/opt/data
+    restart: "no"
+
+  paperclip-init:
+    image: ghcr.io/hostinger/hvps-paperclip:latest
+    user: "0:0"
+    entrypoint: ["sh", "-c"]
+    command:
+      - |
+        set -e
+        mkdir -p /paperclip
+        chown -R 1000:1000 /paperclip
+        echo "paperclip-init: /paperclip owned by 1000:1000"
+    volumes:
+      - paperclip-data:/paperclip
+    restart: "no"
+
+  # ── Hermes TUI (ttyd web terminal). Self-contained auth via ttyd -c.
+  hermes-tui:
+    image: ghcr.io/hostinger/hvps-hermes-agent:latest
+    restart: unless-stopped
+    depends_on:
+      hermes-init:
+        condition: service_completed_successfully
+    env_file: .env
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        exec gosu hermes ttyd \
+          --port 4860 \
+          -c "$$ADMIN_USERNAME:$$ADMIN_PASSWORD" \
+          -W \
+          -t titleFixed="Hermes Agent" \
+          -t disableResizeOverlay=true \
+          /hermes.sh
+    volumes:
+      - hermes-data:/opt/data
+    networks:
+      - default
+
+  # ── Hermes Dashboard (graphical SPA). Bound to 0.0.0.0:9119 so
+  #     either host port-map (local mode) or Traefik (vps mode) can
+  #     reach it. Hermes ships its own per-session token over HTML.
+  hermes-dashboard:
+    image: ghcr.io/hostinger/hvps-hermes-agent:latest
+    restart: unless-stopped
+    depends_on:
+      hermes-init:
+        condition: service_completed_successfully
+    user: "10000:10000"
+    entrypoint: ["/opt/hermes/.venv/bin/hermes"]
+    command:
+      - "dashboard"
+      - "--host"
+      - "0.0.0.0"
+      - "--port"
+      - "9119"
+      - "--no-open"
+      - "--skip-build"
+      - "--insecure"
+    environment:
+      HERMES_HOME: /opt/data
+    volumes:
+      - hermes-data:/opt/data
+    networks:
+      - default
+
+  # ── Hermes Gateway (messaging — Slack/Telegram/Discord). Opt-in:
+  #     enable after `hermes setup` via `docker compose --profile
+  #     gateway up -d`.
+  hermes-gateway:
+    image: ghcr.io/hostinger/hvps-hermes-agent:latest
+    restart: unless-stopped
+    profiles: ["gateway"]
+    depends_on:
+      hermes-init:
+        condition: service_completed_successfully
+    user: "10000:10000"
+    entrypoint: ["/opt/hermes/.venv/bin/hermes"]
+    command: ["gateway", "--accept-hooks", "run"]
+    environment:
+      HERMES_HOME: /opt/data
+      NPM_CONFIG_PREFIX: /opt/data/.npm-global
+      NPM_CONFIG_CACHE: /opt/data/.npm-cache
+      GOOGLE_WORKSPACE_CLI_KEYRING_BACKEND: file
+      PATH: /opt/data/.local/bin:/opt/data/.npm-global/bin:/opt/hermes/.venv/bin:/usr/local/bin:/usr/bin:/bin
+    volumes:
+      - hermes-data:/opt/data
+    networks:
+      - default
+
+  # ── Paperclip (control plane + web UI on 3100). Self-authenticated
+  #     via its own sign-up flow. Same bridge network as Hermes, so
+  #     Hermes can reach `http://paperclip:3100` directly with the
+  #     short-lived JWT injected on heartbeats.
+  paperclip:
+    image: ghcr.io/hostinger/hvps-paperclip:latest
+    restart: unless-stopped
+    depends_on:
+      paperclip-init:
+        condition: service_completed_successfully
+    env_file: .env
+    environment:
+      # Bootstrap admin (auto sign-up on first boot if config.json absent).
+      ADMIN_NAME: "${ADMIN_NAME:-Dante}"
+      ADMIN_EMAIL: "${ADMIN_EMAIL:?ADMIN_EMAIL is required for Paperclip bootstrap}"
+      ADMIN_PASSWORD: "${ADMIN_PASSWORD:?ADMIN_PASSWORD is required for Paperclip bootstrap}"
+      PAPERCLIP_PUBLIC_URL: "${PAPERCLIP_PUBLIC_URL:-http://localhost:3100}"
+      PAPERCLIP_INSTANCE_ID: default
+    volumes:
+      - paperclip-data:/paperclip
+    networks:
+      - default
+
+volumes:
+  hermes-data:
+  paperclip-data:
+
+networks:
+  default:
+    name: ${COMPOSE_PROJECT_NAME:-hermes-paperclip}_net

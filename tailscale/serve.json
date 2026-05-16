@@ -1,0 +1,25 @@
+{
+  "TCP": {
+    "9119": { "HTTPS": true },
+    "4860": { "HTTPS": true },
+    "3100": { "HTTPS": true }
+  },
+  "Web": {
+    "${TS_CERT_DOMAIN}:9119": {
+      "Handlers": {
+        "/": { "Proxy": "http://hermes-dashboard:9119" }
+      }
+    },
+    "${TS_CERT_DOMAIN}:4860": {
+      "Handlers": {
+        "/": { "Proxy": "http://hermes-tui:4860" }
+      }
+    },
+    "${TS_CERT_DOMAIN}:3100": {
+      "Handlers": {
+        "/": { "Proxy": "http://paperclip:3100" }
+      }
+    }
+  },
+  "AllowFunnel": {}
+}

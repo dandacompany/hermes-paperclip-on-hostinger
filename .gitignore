@@ -1,0 +1,6 @@
+.env
+.env.bak-*
+cloudflared/*.json
+cloudflared/config.yml
+*.local
+.DS_Store
