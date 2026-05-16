@@ -6,6 +6,8 @@
 - `ghcr.io/hostinger/hvps-hermes-agent:latest`
 - `ghcr.io/hostinger/hvps-paperclip:latest`
 
+> **Apple Silicon Mac 사용자**: 두 이미지는 amd64-only라 Docker Desktop의 Rosetta 2 emulation으로 돕니다. Settings → General → "Use Rosetta for x86_64/amd64 emulation on Apple Silicon" 체크 (Docker Desktop 4.16+). compose 파일에 `platform: linux/amd64`가 박혀 있어 자동 처리됩니다.
+
 ## 3가지 인터페이스
 
 | 인터페이스 | 컨테이너 포트 | 인증 | 용도 |

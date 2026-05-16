@@ -12,6 +12,7 @@ services:
   #     Hermes data needs UID 10000, Paperclip data needs UID 1000 (node).
   hermes-init:
     image: ghcr.io/hostinger/hvps-hermes-agent:latest
+    platform: linux/amd64
     user: "0:0"
     entrypoint: ["sh", "-c"]
     command:
@@ -26,6 +27,7 @@ services:
 
   paperclip-init:
     image: ghcr.io/hostinger/hvps-paperclip:latest
+    platform: linux/amd64
     user: "0:0"
     entrypoint: ["sh", "-c"]
     command:
@@ -41,6 +43,7 @@ services:
   # ── Hermes TUI (ttyd web terminal). Self-contained auth via ttyd -c.
   hermes-tui:
     image: ghcr.io/hostinger/hvps-hermes-agent:latest
+    platform: linux/amd64
     restart: unless-stopped
     depends_on:
       hermes-init:
@@ -66,6 +69,7 @@ services:
   #     reach it. Hermes ships its own per-session token over HTML.
   hermes-dashboard:
     image: ghcr.io/hostinger/hvps-hermes-agent:latest
+    platform: linux/amd64
     restart: unless-stopped
     depends_on:
       hermes-init:
@@ -93,6 +97,7 @@ services:
   #     gateway up -d`.
   hermes-gateway:
     image: ghcr.io/hostinger/hvps-hermes-agent:latest
+    platform: linux/amd64
     restart: unless-stopped
     profiles: ["gateway"]
     depends_on:
@@ -118,6 +123,7 @@ services:
   #     short-lived JWT injected on heartbeats.
   paperclip:
     image: ghcr.io/hostinger/hvps-paperclip:latest
+    platform: linux/amd64
     restart: unless-stopped
     depends_on:
       paperclip-init:
