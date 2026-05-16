@@ -37,7 +37,7 @@ docker compose up -d
 #    URL at its own boot time.
 if grep -q "docker-compose.tailscale.yml" .env 2>/dev/null; then
   echo "==> waiting for Tailscale sidecar to register..."
-  for i in $(seq 1 30); do
+  for _ in $(seq 1 30); do
     FQDN=$(docker compose exec -T tailscale sh -c 'tailscale status --json 2>/dev/null' \
       | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('Self',{}).get('DNSName','').rstrip('.'))" 2>/dev/null || true)
     [ -n "$FQDN" ] && break
