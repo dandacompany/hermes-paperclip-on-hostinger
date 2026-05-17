@@ -415,38 +415,47 @@ openssl rand -base64 32 | tr -d '/+=' | head -c 32 ; echo
     },
     {
         "num": "07",
-        "title": "메시 FQDN 확인 + 접속",
-        "lede": "Tailscale admin 콘솔에서 노드 이름을 확정하고, 다른 디바이스에서 메시 URL 로 접속합니다.",
+        "title": "메시 FQDN 확인 + 세 인터페이스 접속",
+        "lede": "Tailscale admin 콘솔에서 노드 도메인을 확정하고, 같은 tailnet 멤버 디바이스에서 Hermes · Paperclip · TUI 세 인터페이스를 차례로 엽니다.",
         "blocks": [
             note_block(
                 "07-1. 메시 노드 확인",
-                "<a href=\"https://login.tailscale.com/admin/machines\">login.tailscale.com/admin/machines</a> 에서 "
+                "<a href=\"https://login.tailscale.com/admin/machines\">login.tailscale.com/admin/machines</a> 의 머신 목록에서 "
                 "<code>hermes-paperclip</code> (또는 본인이 지정한 <code>TS_HOSTNAME</code>) 항목을 찾습니다. "
-                "노드 이름 아래에 <code>hermes-paperclip.&lt;your-tailnet&gt;.ts.net</code> 형식의 전체 도메인이 표시됩니다.",
+                "이름 아래에 <code>hermes-paperclip.&lt;your-tailnet&gt;.ts.net</code> 형식의 전체 도메인과 100.x.x.x mesh IP 가 보이면 가입 성공입니다.",
+            ),
+            figure_block("08-tailscale-admin.png", "Tailscale admin 콘솔의 Machines 페이지 — hermes-paperclip 노드가 mesh IP·OS·소유자와 함께 표시된 상태."),
+            note_block(
+                "07-2. 디바이스 측 Tailscale 준비",
+                "접속하려는 노트북·폰에 Tailscale 클라이언트가 설치되어 있고 같은 tailnet 에 가입되어 있어야 합니다. "
+                "다른 tailnet 이면 같은 IP·도메인이라도 안 보입니다. "
+                "팀원 초대는 <a href=\"https://login.tailscale.com/admin/users\">admin → Users → Invite users</a> 에서 이메일 발송.",
             ),
             table(
                 [
-                    ("Hermes Dashboard", "https://hermes-paperclip.<your-tailnet>.ts.net:9119"),
-                    ("Hermes TUI", "https://hermes-paperclip.<your-tailnet>.ts.net:4860"),
-                    ("Paperclip", "https://hermes-paperclip.<your-tailnet>.ts.net:3100"),
+                    ("Hermes Dashboard", "https://hermes-paperclip.<your-tailnet>.ts.net:9119", "별도 로그인 없음 (Hermes 자체 세션 토큰)"),
+                    ("Hermes TUI", "https://hermes-paperclip.<your-tailnet>.ts.net:4860", "Basic Auth: hermes / ADMIN_PASSWORD"),
+                    ("Paperclip", "https://hermes-paperclip.<your-tailnet>.ts.net:3100", "Sign-in: ADMIN_EMAIL / ADMIN_PASSWORD"),
                 ],
-                ("인터페이스", "메시 URL"),
+                ("인터페이스", "메시 URL", "첫 진입 인증"),
             ),
             note_block(
-                "07-2. PAPERCLIP_PUBLIC_URL 갱신",
-                "Docker Manager 의 환경변수 편집에서 <code>PAPERCLIP_PUBLIC_URL</code> 을 "
-                "<code>https://hermes-paperclip.&lt;your-tailnet&gt;.ts.net:3100</code> 으로 바꾸고 "
-                "Save → Restart paperclip 컨테이너. OAuth callback · 메일 링크 URL 이 정확해집니다.",
+                "07-3. Hermes Dashboard",
+                "<code>:9119</code> 로 들어가면 Hermes 자체 세션 토큰이 자동 발급되어 별도 로그인 없이 메인 화면이 열립니다. "
+                "Sessions · API Keys · Skills 탭에서 LLM provider 키 등록과 첫 모델 호출 검증을 진행합니다.",
             ),
+            figure_block("09-hermes-dashboard.png", "Hermes Dashboard 메인 화면 — Sessions · API Keys · Skills 탭이 보이는 상태."),
             note_block(
-                "07-3. 디바이스 측 Tailscale",
-                "접속하려는 노트북·폰에 Tailscale 클라이언트가 깔려 있고 <strong>같은 tailnet</strong> 에 가입되어 있어야 합니다. "
-                "다른 tailnet 이면 같은 IP·도메인이라도 안 보입니다.",
+                "07-4. Paperclip 첫 접속",
+                "<code>:3100</code> 으로 들어가 sign-in 폼에 5단계에서 입력한 <code>ADMIN_EMAIL</code> 과 <code>ADMIN_PASSWORD</code> 를 입력합니다. "
+                "첫 로그인 시 admin 계정이 자동 생성되며 작업·라우틴 워크플로 콘솔이 열립니다.",
             ),
+            figure_block("10-paperclip-login.png", "Paperclip sign-in 화면 또는 첫 로그인 후 워크스페이스 메인."),
             note_block(
-                "07-4. 팀원 초대",
-                "<a href=\"https://login.tailscale.com/admin/users\">admin → Users → Invite users</a> 로 이메일 발송. "
-                "초대받은 사람이 같은 tailnet 에 가입한 뒤 위 URL 로 접근 가능합니다.",
+                "07-5. PAPERCLIP_PUBLIC_URL 갱신 (선택)",
+                "Paperclip 컨테이너 env 의 <code>PAPERCLIP_PUBLIC_URL</code> 을 "
+                "<code>https://hermes-paperclip.&lt;your-tailnet&gt;.ts.net:3100</code> 으로 바꾸고 paperclip 컨테이너 Restart. "
+                "이메일 magic link · OAuth callback URL 이 메시 도메인으로 맞춰져 외부 자동화가 깔끔해집니다.",
             ),
         ],
     },
@@ -490,10 +499,9 @@ openssl rand -base64 32 | tr -d '/+=' | head -c 32 ; echo
             note_block(
                 "08-4. 문제가 생기면",
                 "Paperclip 이 부팅 직후 죽으면 <code>PAPERCLIP_PUBLIC_URL</code> 값이 잘못된 URL 형식이라는 뜻입니다 (better-auth 가 거부). "
-                "7-2 처럼 메시 FQDN 으로 갱신하거나 <code>http://localhost:3100</code> 으로 임시 복구합니다. "
+                "7-5 처럼 메시 FQDN 으로 갱신하거나 <code>http://localhost:3100</code> 으로 임시 복구합니다. "
                 "그 외 항목은 저장소의 <code>docs/EXPOSURE-tailscale.md</code> 트러블슈팅 절을 따릅니다.",
             ),
-            figure_block("08-ops.png", "개별 컨테이너의 Restart · Logs · Env 액션 메뉴."),
         ],
     },
 ]

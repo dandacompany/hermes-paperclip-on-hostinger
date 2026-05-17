@@ -508,38 +508,65 @@ openssl rand -base64 32 | tr -d &#x27;/+=&#x27; | head -c 32 ; echo</code></pre>
 
     <section class="step" id="step-07">
       <div class="section-num">STEP 07</div>
-      <h2>메시 FQDN 확인 + 접속</h2>
-      <p class="lede">Tailscale admin 콘솔에서 노드 이름을 확정하고, 다른 디바이스에서 메시 URL 로 접속합니다.</p>
+      <h2>메시 FQDN 확인 + 세 인터페이스 접속</h2>
+      <p class="lede">Tailscale admin 콘솔에서 노드 도메인을 확정하고, 같은 tailnet 멤버 디바이스에서 Hermes · Paperclip · TUI 세 인터페이스를 차례로 엽니다.</p>
 
     <aside class="note-block">
       <div class="block-label">07-1. 메시 노드 확인</div>
-      <p><a href="https://login.tailscale.com/admin/machines">login.tailscale.com/admin/machines</a> 에서 <code>hermes-paperclip</code> (또는 본인이 지정한 <code>TS_HOSTNAME</code>) 항목을 찾습니다. 노드 이름 아래에 <code>hermes-paperclip.&lt;your-tailnet&gt;.ts.net</code> 형식의 전체 도메인이 표시됩니다.</p>
+      <p><a href="https://login.tailscale.com/admin/machines">login.tailscale.com/admin/machines</a> 의 머신 목록에서 <code>hermes-paperclip</code> (또는 본인이 지정한 <code>TS_HOSTNAME</code>) 항목을 찾습니다. 이름 아래에 <code>hermes-paperclip.&lt;your-tailnet&gt;.ts.net</code> 형식의 전체 도메인과 100.x.x.x mesh IP 가 보이면 가입 성공입니다.</p>
+    </aside>
+
+
+    <figure class="screenshot">
+      <img src="assets/placeholder.svg" alt="Tailscale admin 콘솔의 Machines 페이지 — hermes-paperclip 노드가 mesh IP·OS·소유자와 함께 표시된 상태." loading="lazy">
+      <span class="placeholder-tag">PLACEHOLDER · 08-tailscale-admin.png</span>
+      <figcaption>Tailscale admin 콘솔의 Machines 페이지 — hermes-paperclip 노드가 mesh IP·OS·소유자와 함께 표시된 상태.</figcaption>
+    </figure>
+
+
+    <aside class="note-block">
+      <div class="block-label">07-2. 디바이스 측 Tailscale 준비</div>
+      <p>접속하려는 노트북·폰에 Tailscale 클라이언트가 설치되어 있고 같은 tailnet 에 가입되어 있어야 합니다. 다른 tailnet 이면 같은 IP·도메인이라도 안 보입니다. 팀원 초대는 <a href="https://login.tailscale.com/admin/users">admin → Users → Invite users</a> 에서 이메일 발송.</p>
     </aside>
 
 
     <table>
-      <thead><tr><th>인터페이스</th><th>메시 URL</th></tr></thead>
-      <tbody><tr><td>Hermes Dashboard</td><td>https://hermes-paperclip.&lt;your-tailnet&gt;.ts.net:9119</td></tr>
-<tr><td>Hermes TUI</td><td>https://hermes-paperclip.&lt;your-tailnet&gt;.ts.net:4860</td></tr>
-<tr><td>Paperclip</td><td>https://hermes-paperclip.&lt;your-tailnet&gt;.ts.net:3100</td></tr></tbody>
+      <thead><tr><th>인터페이스</th><th>메시 URL</th><th>첫 진입 인증</th></tr></thead>
+      <tbody><tr><td>Hermes Dashboard</td><td>https://hermes-paperclip.&lt;your-tailnet&gt;.ts.net:9119</td><td>별도 로그인 없음 (Hermes 자체 세션 토큰)</td></tr>
+<tr><td>Hermes TUI</td><td>https://hermes-paperclip.&lt;your-tailnet&gt;.ts.net:4860</td><td>Basic Auth: hermes / ADMIN_PASSWORD</td></tr>
+<tr><td>Paperclip</td><td>https://hermes-paperclip.&lt;your-tailnet&gt;.ts.net:3100</td><td>Sign-in: ADMIN_EMAIL / ADMIN_PASSWORD</td></tr></tbody>
     </table>
 
 
     <aside class="note-block">
-      <div class="block-label">07-2. PAPERCLIP_PUBLIC_URL 갱신</div>
-      <p>Docker Manager 의 환경변수 편집에서 <code>PAPERCLIP_PUBLIC_URL</code> 을 <code>https://hermes-paperclip.&lt;your-tailnet&gt;.ts.net:3100</code> 으로 바꾸고 Save → Restart paperclip 컨테이너. OAuth callback · 메일 링크 URL 이 정확해집니다.</p>
+      <div class="block-label">07-3. Hermes Dashboard</div>
+      <p><code>:9119</code> 로 들어가면 Hermes 자체 세션 토큰이 자동 발급되어 별도 로그인 없이 메인 화면이 열립니다. Sessions · API Keys · Skills 탭에서 LLM provider 키 등록과 첫 모델 호출 검증을 진행합니다.</p>
     </aside>
 
 
+    <figure class="screenshot">
+      <img src="assets/placeholder.svg" alt="Hermes Dashboard 메인 화면 — Sessions · API Keys · Skills 탭이 보이는 상태." loading="lazy">
+      <span class="placeholder-tag">PLACEHOLDER · 09-hermes-dashboard.png</span>
+      <figcaption>Hermes Dashboard 메인 화면 — Sessions · API Keys · Skills 탭이 보이는 상태.</figcaption>
+    </figure>
+
+
     <aside class="note-block">
-      <div class="block-label">07-3. 디바이스 측 Tailscale</div>
-      <p>접속하려는 노트북·폰에 Tailscale 클라이언트가 깔려 있고 <strong>같은 tailnet</strong> 에 가입되어 있어야 합니다. 다른 tailnet 이면 같은 IP·도메인이라도 안 보입니다.</p>
+      <div class="block-label">07-4. Paperclip 첫 접속</div>
+      <p><code>:3100</code> 으로 들어가 sign-in 폼에 5단계에서 입력한 <code>ADMIN_EMAIL</code> 과 <code>ADMIN_PASSWORD</code> 를 입력합니다. 첫 로그인 시 admin 계정이 자동 생성되며 작업·라우틴 워크플로 콘솔이 열립니다.</p>
     </aside>
 
 
+    <figure class="screenshot">
+      <img src="assets/placeholder.svg" alt="Paperclip sign-in 화면 또는 첫 로그인 후 워크스페이스 메인." loading="lazy">
+      <span class="placeholder-tag">PLACEHOLDER · 10-paperclip-login.png</span>
+      <figcaption>Paperclip sign-in 화면 또는 첫 로그인 후 워크스페이스 메인.</figcaption>
+    </figure>
+
+
     <aside class="note-block">
-      <div class="block-label">07-4. 팀원 초대</div>
-      <p><a href="https://login.tailscale.com/admin/users">admin → Users → Invite users</a> 로 이메일 발송. 초대받은 사람이 같은 tailnet 에 가입한 뒤 위 URL 로 접근 가능합니다.</p>
+      <div class="block-label">07-5. PAPERCLIP_PUBLIC_URL 갱신 (선택)</div>
+      <p>Paperclip 컨테이너 env 의 <code>PAPERCLIP_PUBLIC_URL</code> 을 <code>https://hermes-paperclip.&lt;your-tailnet&gt;.ts.net:3100</code> 으로 바꾸고 paperclip 컨테이너 Restart. 이메일 magic link · OAuth callback URL 이 메시 도메인으로 맞춰져 외부 자동화가 깔끔해집니다.</p>
     </aside>
 
     </section>
@@ -582,15 +609,8 @@ openssl rand -base64 32 | tr -d &#x27;/+=&#x27; | head -c 32 ; echo</code></pre>
 
     <aside class="note-block">
       <div class="block-label">08-4. 문제가 생기면</div>
-      <p>Paperclip 이 부팅 직후 죽으면 <code>PAPERCLIP_PUBLIC_URL</code> 값이 잘못된 URL 형식이라는 뜻입니다 (better-auth 가 거부). 7-2 처럼 메시 FQDN 으로 갱신하거나 <code>http://localhost:3100</code> 으로 임시 복구합니다. 그 외 항목은 저장소의 <code>docs/EXPOSURE-tailscale.md</code> 트러블슈팅 절을 따릅니다.</p>
+      <p>Paperclip 이 부팅 직후 죽으면 <code>PAPERCLIP_PUBLIC_URL</code> 값이 잘못된 URL 형식이라는 뜻입니다 (better-auth 가 거부). 7-5 처럼 메시 FQDN 으로 갱신하거나 <code>http://localhost:3100</code> 으로 임시 복구합니다. 그 외 항목은 저장소의 <code>docs/EXPOSURE-tailscale.md</code> 트러블슈팅 절을 따릅니다.</p>
     </aside>
-
-
-    <figure class="screenshot">
-      <img src="assets/placeholder.svg" alt="개별 컨테이너의 Restart · Logs · Env 액션 메뉴." loading="lazy">
-      <span class="placeholder-tag">PLACEHOLDER · 08-ops.png</span>
-      <figcaption>개별 컨테이너의 Restart · Logs · Env 액션 메뉴.</figcaption>
-    </figure>
 
     </section>
 
