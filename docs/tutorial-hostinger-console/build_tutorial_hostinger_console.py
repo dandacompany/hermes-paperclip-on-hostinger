@@ -463,44 +463,45 @@ openssl rand -base64 32 | tr -d '/+=' | head -c 32 ; echo
             ),
             figure_block("10-hermes-dashboard.png", "Hermes Dashboard 메인 — 왼쪽 사이드바의 풀 메뉴, 가운데 Sessions 탭 (NO SESSIONS YET 안내), 하단 System 패널 (Gateway Status · Active Sessions)."),
             note_block(
-                "07-5. Paperclip 첫 접속 — Bootstrap invite 흐름",
-                "<code>:3100</code> 첫 진입 시 sign-in 폼 대신 <strong>Instance setup required — A bootstrap invite is already active</strong> 안내가 보일 수 있습니다. "
-                "Paperclip 은 첫 부팅 때 발급된 <strong>일회용 invite URL 로만 admin 을 등록</strong>합니다 (env 의 ADMIN_PASSWORD 만으로는 자동 가입되지 않음). "
-                "<code>paperclip</code> 컨테이너의 Logs 를 열어 <code>Invite URL: http://localhost:3100/invite/pcp_bootstrap_…</code> 줄을 찾고, "
-                "<code>localhost:3100</code> 부분을 메시 Full domain 으로 바꿔 접속합니다 "
-                "(예: <code>https://&lt;Full-domain&gt;:3100/invite/pcp_bootstrap_…</code>).",
+                "07-5. Paperclip 첫 접속 — Instance setup required 화면",
+                "<code>:3100</code> 첫 진입 시 sign-in 폼 대신 <strong>Instance setup required</strong> 안내가 보입니다. "
+                "<em>No instance admin exists yet. A bootstrap invite is already active.</em> 와 함께 "
+                "Paperclip 이 그대로 다음 명령을 추천합니다: <code>pnpm paperclipai auth bootstrap-ceo</code>. "
+                "이 화면은 sign-up 폼이 아닌 안내 — 표시된 명령을 실행해 invite URL 을 받아야 가입 흐름이 시작됩니다.",
             ),
-            figure_block("11-paperclip-invite-signup.png", "invite URL 첫 진입 — 좌측 'Set up Paperclip' 패널은 company · invited by · requested access · invite expires 안내, 우측 'Create your account' 폼에서 Name · Email · Password 를 입력하고 Create account and continue."),
+            figure_block("11-paperclip-setup-required.png", "Paperclip Instance setup required 안내 — 첫 admin 이 없으므로 콘솔 터미널에서 rotate 명령을 실행하라는 화면."),
             note_block(
-                "07-5b. 가입 후 흐름",
-                "Create account 버튼을 누르면 admin 계정이 만들어지고 invite 가 소진됩니다. "
-                "이후 같은 <code>:3100</code> URL 은 일반 sign-in 폼으로 전환되며, 다음 로그인부터는 방금 등록한 email · password 로 들어갑니다. "
-                "Paperclip Logs 에 새로 찍히는 <code>auth: instance admin registered</code> 같은 줄로도 가입 완료를 확인할 수 있습니다.",
-            ),
-            note_block(
-                "07-6. invite 만료 · 사용 · 차단 시 — 콘솔 터미널로 rotate",
-                "<strong>Invite not available — This invite may be expired, revoked, or already used.</strong> "
-                "안내가 보이면 콘솔 터미널만으로 새 invite 를 발급합니다 (SSH 불필요). "
-                "Docker Manager 의 <code>paperclip</code> 컨테이너 카드 → <strong>터미널</strong> 링크 클릭 → 열린 콘솔 창에서: "
-                "<code>paperclipai auth bootstrap-ceo</code> "
-                "한 줄 실행. 출력의 <code>Invite URL: https://&lt;Full-domain&gt;:3100/invite/pcp_bootstrap_…</code> 를 그대로 복사해 브라우저에 붙여넣기. "
+                "07-6. 콘솔 터미널에서 invite URL 발급",
+                "Docker Manager → <code>paperclip</code> 컨테이너 카드 → <strong>터미널</strong> 링크 클릭 → 열린 콘솔 창에서: "
+                "<code>paperclipai auth bootstrap-ceo</code> 한 줄 실행. "
+                "(안내 화면의 <code>pnpm</code> 접두사는 Paperclip 표준 안내지만 우리 이미지에선 <code>paperclipai</code> 가 글로벌 PATH 에 있어 그대로 동작.) "
+                "출력의 <code>Invite URL: https://&lt;Full-domain&gt;:3100/invite/pcp_bootstrap_…</code> 를 복사. "
                 "07-2b 에서 PAPERCLIP_PUBLIC_URL 을 메시 도메인으로 갱신해 두었기 때문에 invite URL 이 처음부터 메시 도메인으로 발급됩니다.",
             ),
-            figure_block("12-paperclip-rotate-terminal.png", "paperclip 컨테이너의 콘솔 터미널 — paperclipai auth bootstrap-ceo 실행 후 출력된 'Created bootstrap CEO invite' 와 새 Invite URL · 만료 시각."),
+            figure_block("12-paperclip-rotate-terminal.png", "paperclip 컨테이너 콘솔 터미널 — paperclipai auth bootstrap-ceo 실행 후 'Created bootstrap CEO invite' · 새 Invite URL · Expires 시각 출력."),
             note_block(
-                "07-6b. 첫 부팅 invite 만 필요하다면 — Logs 뷰",
-                "처음 부팅 직후의 invite URL 만 다시 보고 싶다면 같은 컨테이너 카드의 <strong>Logs</strong> 를 열어 "
-                "검색(Cmd+F / Ctrl+F) 으로 <code>Invite URL</code> 을 찾습니다. "
-                "단, CLI 로 rotate 한 invite 는 명령 output 으로만 표시되어 Logs 에 안 찍히므로, rotate 시나리오에는 위 터미널 흐름을 쓰세요.",
+                "07-7. invite URL 열고 admin 가입",
+                "복사한 invite URL 을 같은 디바이스 브라우저 새 탭에 붙여넣어 엽니다. "
+                "좌측 <strong>Set up Paperclip</strong> 패널이 company · invited by · requested access · invite expires 를 보여주고, "
+                "우측 <strong>Create your account</strong> 폼에 Name · Email · Password 입력 → <strong>Create account and continue</strong>. "
+                "가입 완료 시 invite 가 즉시 소진되고 같은 <code>:3100</code> URL 은 다음부터 일반 sign-in 폼으로 전환됩니다.",
             ),
+            figure_block("13-paperclip-invite-signup.png", "invite URL 진입 후 Set up Paperclip / Create your account 두 컬럼 — 좌측 invite 메타데이터, 우측 가입 폼."),
+            figure_block("14-paperclip-workspace.png", "가입 완료 후 Paperclip 워크스페이스 메인 또는 sign-in 페이지."),
             note_block(
-                "07-7. PAPERCLIP_PUBLIC_URL 의 역할 정리",
+                "07-8. PAPERCLIP_PUBLIC_URL 의 역할 정리",
                 "07-2b 에서 갱신한 <code>PAPERCLIP_PUBLIC_URL</code> 한 값이 다음 네 군데를 동시에 결정합니다. "
                 "(1) better-auth trusted origin 목록 (메시 도메인 접근 허용), "
                 "(2) 이메일 magic link / 초대장 URL, "
                 "(3) OAuth callback URL, "
                 "(4) Paperclip UI 가 절대 URL 을 생성할 때 prefix. "
                 "단일 source of truth — 도메인 변경 시 이 한 줄만 바꾸면 됩니다.",
+            ),
+            note_block(
+                "07-9. invite 만료 · 사용됨 시 — 같은 rotate 흐름",
+                "<strong>Invite not available — This invite may be expired, revoked, or already used.</strong> 안내가 뜨면 "
+                "07-6 의 같은 콘솔 터미널에서 <code>paperclipai auth bootstrap-ceo</code> 를 한 번 더 실행해 새 invite URL 을 받습니다. "
+                "Logs 뷰에는 CLI 로 rotate 한 invite 가 안 찍히므로 (첫 부팅 시 stdout 만 기록), rotate 는 항상 터미널 흐름으로.",
             ),
         ],
     },
