@@ -469,13 +469,16 @@ openssl rand -base64 32 | tr -d '/+=' | head -c 32 ; echo
                 "Paperclip 이 그대로 다음 명령을 추천합니다: <code>pnpm paperclipai auth bootstrap-ceo</code>. "
                 "이 화면은 sign-up 폼이 아닌 안내 — 표시된 명령을 실행해 invite URL 을 받아야 가입 흐름이 시작됩니다.",
             ),
-            figure_block("11-paperclip-setup-required.png", "Paperclip Instance setup required 안내 — 첫 admin 이 없으므로 콘솔 터미널에서 rotate 명령을 실행하라는 화면."),
+            figure_block("11-paperclip-setup-required.png", "Paperclip Instance setup required 안내. 화면이 표시하는 명령은 'pnpm paperclipai auth bootstrap-ceo' 지만 Hostinger 이미지에선 'pnpm' 접두사 없이 'paperclipai auth bootstrap-ceo' 만 입력합니다 (다음 단계 참고)."),
             note_block(
                 "07-6. 콘솔 터미널에서 invite URL 발급",
-                "Docker Manager → <code>paperclip</code> 컨테이너 카드 → <strong>터미널</strong> 링크 클릭 → 열린 콘솔 창에서: "
-                "<code>paperclipai auth bootstrap-ceo</code> 한 줄 실행. "
-                "(안내 화면의 <code>pnpm</code> 접두사는 Paperclip 표준 안내지만 우리 이미지에선 <code>paperclipai</code> 가 글로벌 PATH 에 있어 그대로 동작.) "
-                "출력의 <code>Invite URL: https://&lt;Full-domain&gt;:3100/invite/pcp_bootstrap_…</code> 를 복사. "
+                "Docker Manager → <code>paperclip</code> 컨테이너 카드 → <strong>터미널</strong> 링크 클릭 → 열린 콘솔 창에서 다음 한 줄을 입력합니다 (<strong>안내 화면의 <code>pnpm</code> 접두사는 빼고</strong>): "
+                "<br><br>"
+                "<code>paperclipai auth bootstrap-ceo</code>"
+                "<br><br>"
+                "Hostinger 가 빌드한 이미지는 <code>paperclipai</code> 를 <code>/usr/local/bin/</code> 에 글로벌 설치해 두어 <code>pnpm</code> 래퍼가 필요 없습니다. "
+                "<code>pnpm</code> 을 그대로 두면 <code>bash: pnpm: command not found</code> 가 떨어집니다. "
+                "성공 시 출력의 <code>Invite URL: https://&lt;Full-domain&gt;:3100/invite/pcp_bootstrap_…</code> 한 줄을 그대로 복사. "
                 "07-2b 에서 PAPERCLIP_PUBLIC_URL 을 메시 도메인으로 갱신해 두었기 때문에 invite URL 이 처음부터 메시 도메인으로 발급됩니다.",
             ),
             figure_block("12-paperclip-rotate-terminal.png", "paperclip 컨테이너 콘솔 터미널 — paperclipai auth bootstrap-ceo 실행 후 'Created bootstrap CEO invite' · 새 Invite URL · Expires 시각 출력."),
