@@ -23,7 +23,7 @@ spawn_bg() {
   ) &
 }
 
-spawn_bg "hermes-dashboard" hermes dashboard --port 9119 --bind 0.0.0.0
+spawn_bg "hermes-dashboard" hermes dashboard --port 9119 --host 0.0.0.0 --insecure --no-open --skip-build
 spawn_bg "hermes-ttyd"      ttyd -p 4860 -c "$HERMES_CREDS" hermes shell
 
 exec paperclipai run

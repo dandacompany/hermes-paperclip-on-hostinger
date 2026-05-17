@@ -19,6 +19,10 @@ teardown() { teardown_tmp_home; }
   [ "$status" -eq 0 ]
   [[ "$output" == *"hermes-dashboard spawned"* ]]
   [[ "$output" == *"hermes-ttyd spawned"* ]]
+  [[ "$output" == *"--host 0.0.0.0"* ]]
+  [[ "$output" == *"--insecure"* ]]
+  [[ "$output" == *"--no-open"* ]]
+  [[ "$output" == *"--skip-build"* ]]
 }
 
 @test "supervisor: .ttyd-creds 누락 시 명시적 에러" {
