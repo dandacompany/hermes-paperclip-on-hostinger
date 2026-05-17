@@ -460,8 +460,14 @@ openssl rand -base64 32 | tr -d '/+=' | head -c 32 ; echo
                 "Paperclip 은 첫 부팅 때 발급된 <strong>일회용 invite URL 로만 admin 을 등록</strong>합니다 (env 의 ADMIN_PASSWORD 만으로는 자동 가입되지 않음). "
                 "<code>paperclip</code> 컨테이너의 Logs 를 열어 <code>Invite URL: http://localhost:3100/invite/pcp_bootstrap_…</code> 줄을 찾고, "
                 "<code>localhost:3100</code> 부분을 메시 Full domain 으로 바꿔 접속합니다 "
-                "(예: <code>https://&lt;Full-domain&gt;:3100/invite/pcp_bootstrap_…</code>). "
-                "그 페이지의 폼에 email · password 를 입력하면 admin 계정이 생성되고, 이후 일반 sign-in 페이지로 들어갈 수 있습니다.",
+                "(예: <code>https://&lt;Full-domain&gt;:3100/invite/pcp_bootstrap_…</code>).",
+            ),
+            figure_block("11-paperclip-invite-signup.png", "invite URL 첫 진입 — 좌측 'Set up Paperclip' 패널은 company · invited by · requested access · invite expires 안내, 우측 'Create your account' 폼에서 Name · Email · Password 를 입력하고 Create account and continue."),
+            note_block(
+                "07-5b. 가입 후 흐름",
+                "Create account 버튼을 누르면 admin 계정이 만들어지고 invite 가 소진됩니다. "
+                "이후 같은 <code>:3100</code> URL 은 일반 sign-in 폼으로 전환되며, 다음 로그인부터는 방금 등록한 email · password 로 들어갑니다. "
+                "Paperclip Logs 에 새로 찍히는 <code>auth: instance admin registered</code> 같은 줄로도 가입 완료를 확인할 수 있습니다.",
             ),
             note_block(
                 "07-6. invite 가 만료됐다면 — rotate 명령",
@@ -471,7 +477,7 @@ openssl rand -base64 32 | tr -d '/+=' | head -c 32 ; echo
                 "(Paperclip 버전에 따라 <code>pnpm paperclipai auth bootstrap-ceo</code> 이 동작하기도 함). "
                 "출력의 새 invite URL 을 위와 같이 메시 Full domain 으로 바꿔 사용.",
             ),
-            figure_block("11-paperclip-login.png", "Paperclip admin sign-up 완료 후 워크스페이스 메인 또는 sign-in 페이지."),
+            figure_block("12-paperclip-workspace.png", "Paperclip admin sign-up 완료 후 워크스페이스 메인 또는 sign-in 페이지."),
             note_block(
                 "07-7. PAPERCLIP_PUBLIC_URL 갱신 (선택)",
                 "Paperclip 컨테이너 env 의 <code>PAPERCLIP_PUBLIC_URL</code> 을 "
