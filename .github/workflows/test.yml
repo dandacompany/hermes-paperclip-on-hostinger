@@ -1,0 +1,22 @@
+name: test
+
+on:
+  pull_request: {}
+  push:
+    branches: [main]
+
+jobs:
+  bats-unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y bats jq
+      - run: bats tests/unit/
+
+  bats-integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - run: sudo apt-get update && sudo apt-get install -y bats jq
+      - run: bats tests/integration/
