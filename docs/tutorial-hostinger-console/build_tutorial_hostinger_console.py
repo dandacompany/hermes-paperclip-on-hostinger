@@ -378,7 +378,7 @@ openssl rand -base64 32 | tr -d '/+=' | head -c 32 ; echo
                 "05-3. 변수 입력 후 저장",
                 "콘솔의 <strong>Save</strong> 또는 <strong>Add variable</strong> 행동으로 6개 모두 등록합니다. 이 시점엔 컨테이너가 아직 부팅 안 됩니다.",
             ),
-            figure_block("05-env-vars.png", "Environment variables 폼에 6개 키·값이 입력된 상태."),
+            figure_block("05-env-vars.png", "환경 탭 — 빨간 박스로 강조된 ADMIN_USERNAME · ADMIN_NAME · ADMIN_EMAIL · ADMIN_PASSWORD · TS_AUTHKEY · TS_HOSTNAME 여섯 줄을 입력 후 저장 후 배포."),
         ],
     },
     {
