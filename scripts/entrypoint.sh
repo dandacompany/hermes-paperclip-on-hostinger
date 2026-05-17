@@ -25,7 +25,7 @@ bootstrap_paperclip() {
   local pid=$!
   until curl -sf "http://localhost:$PORT/api/health" >/dev/null 2>&1; do sleep 2; done
   _paperclip_admin_signup
-  sed -i 's/"disableSignUp": false/"disableSignUp": true/' "$config"
+  jq '.auth.disableSignUp = true' "$config" > "$config.tmp" && mv "$config.tmp" "$config"
   kill "$pid" 2>/dev/null || true
   wait "$pid" 2>/dev/null || true
 }
@@ -33,20 +33,34 @@ bootstrap_paperclip() {
 _paperclip_admin_signup() {
   local cookies
   cookies=$(mktemp)
+
+  local signup_payload signin_payload accept_payload
+  signup_payload=$(jq -n \
+    --arg name     "$ADMIN_NAME" \
+    --arg email    "$ADMIN_EMAIL" \
+    --arg password "$ADMIN_PASSWORD" \
+    '{name: $name, email: $email, password: $password}')
+  signin_payload=$(jq -n \
+    --arg email    "$ADMIN_EMAIL" \
+    --arg password "$ADMIN_PASSWORD" \
+    '{email: $email, password: $password}')
+  accept_payload='{"requestType":"human"}'
+
   curl -sS -c "$cookies" -b "$cookies" \
     -H "Content-Type: application/json" -H "Origin: http://localhost:$PORT" \
     -X POST "http://localhost:$PORT/api/auth/sign-up/email" \
-    --data "{\"name\":\"$ADMIN_NAME\",\"email\":\"$ADMIN_EMAIL\",\"password\":\"$ADMIN_PASSWORD\"}"
+    --data "$signup_payload"
   curl -sS -c "$cookies" -b "$cookies" \
     -H "Content-Type: application/json" -H "Origin: http://localhost:$PORT" \
     -X POST "http://localhost:$PORT/api/auth/sign-in/email" \
-    --data "{\"email\":\"$ADMIN_EMAIL\",\"password\":\"$ADMIN_PASSWORD\"}"
+    --data "$signin_payload"
   local invite
   invite=$(paperclipai auth bootstrap-ceo --force | grep 'Invite URL' | awk -F'/invite/' '{print $2}')
   curl -sS -c "$cookies" -b "$cookies" \
     -H "Content-Type: application/json" -H "Origin: http://localhost:$PORT" \
     -X POST "http://localhost:$PORT/api/invites/$invite/accept" \
-    --data '{"requestType":"human"}'
+    --data "$accept_payload"
+
   rm -f "$cookies"
 }
 

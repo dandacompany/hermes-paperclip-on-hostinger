@@ -12,6 +12,7 @@ setup() {
   # mock paperclipai/sudo/curl/yq/codex-oauth.sh to isolate entrypoint body
   mock_bin sudo 'noop'
   mock_bin yq 'mocked'
+  mock_bin sha256sum 'echo "deadbeef0123 -"'
   SCRIPT="$BATS_TEST_DIRNAME/../../scripts/entrypoint.sh"
 }
 teardown() { teardown_tmp_home; }
@@ -28,6 +29,7 @@ teardown() { teardown_tmp_home; }
   [ -f "$HERMES_HOME/config.yaml" ]
   [ -f "$HERMES_HOME/.ttyd-creds" ]
   grep -q "testuser:testpw" "$HERMES_HOME/.ttyd-creds"
+  grep -q "session_token:" "$HERMES_HOME/config.yaml"
 }
 
 @test "hermes bootstrap: 이미 config.yaml 있으면 건드리지 않음" {
