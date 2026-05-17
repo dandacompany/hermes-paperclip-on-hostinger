@@ -1,0 +1,143 @@
+# Self-contained compose for the Hostinger Docker Manager console
+# "Import compose from URL" path. No external file mounts — the
+# Tailscale sidecar fetches its serve.json from this repository's
+# GitHub Raw at boot.
+#
+# Hostinger 콘솔에서 사용하는 방법:
+#   Docker Manager → Create new project → 컴포즈 → "URL에서 컴포즈 가져오기"
+#   URL: https://raw.githubusercontent.com/dandacompany/hermes-paperclip-on-hostinger/main/docker-compose.console.yml
+#
+# 그 다음 화면에서 6개 환경변수를 입력하세요:
+#   ADMIN_USERNAME  ADMIN_NAME  ADMIN_EMAIL  ADMIN_PASSWORD  TS_AUTHKEY  TS_HOSTNAME
+# 자세한 내용은 docs/tutorial-hostinger-console/ 튜토리얼 참고.
+
+name: hermes-paperclip
+
+services:
+  hermes-init:
+    image: ghcr.io/hostinger/hvps-hermes-agent:latest
+    platform: linux/amd64
+    user: "0:0"
+    entrypoint: ["sh", "-c"]
+    command:
+      - |
+        set -e
+        mkdir -p /opt/data
+        chown -R 10000:10000 /opt/data
+        echo "hermes-init: ready"
+    volumes:
+      - hermes-data:/opt/data
+    restart: "no"
+
+  paperclip-init:
+    image: ghcr.io/hostinger/hvps-paperclip:latest
+    platform: linux/amd64
+    user: "0:0"
+    entrypoint: ["sh", "-c"]
+    command:
+      - |
+        set -e
+        mkdir -p /paperclip
+        chown -R 1000:1000 /paperclip
+        echo "paperclip-init: ready"
+    volumes:
+      - paperclip-data:/paperclip
+    restart: "no"
+
+  hermes-tui:
+    image: ghcr.io/hostinger/hvps-hermes-agent:latest
+    platform: linux/amd64
+    restart: unless-stopped
+    depends_on:
+      hermes-init:
+        condition: service_completed_successfully
+    environment:
+      ADMIN_USERNAME: ${ADMIN_USERNAME}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        exec gosu hermes ttyd \
+          --port 4860 \
+          -c "$$ADMIN_USERNAME:$$ADMIN_PASSWORD" \
+          -W \
+          -t titleFixed="Hermes Agent" \
+          -t disableResizeOverlay=true \
+          /hermes.sh
+    volumes:
+      - hermes-data:/opt/data
+
+  hermes-dashboard:
+    image: ghcr.io/hostinger/hvps-hermes-agent:latest
+    platform: linux/amd64
+    restart: unless-stopped
+    depends_on:
+      hermes-init:
+        condition: service_completed_successfully
+    user: "10000:10000"
+    entrypoint: ["/opt/hermes/.venv/bin/hermes"]
+    command:
+      - "dashboard"
+      - "--host"
+      - "0.0.0.0"
+      - "--port"
+      - "9119"
+      - "--no-open"
+      - "--skip-build"
+      - "--insecure"
+    environment:
+      HERMES_HOME: /opt/data
+    volumes:
+      - hermes-data:/opt/data
+
+  paperclip:
+    image: ghcr.io/hostinger/hvps-paperclip:latest
+    platform: linux/amd64
+    restart: unless-stopped
+    depends_on:
+      paperclip-init:
+        condition: service_completed_successfully
+    environment:
+      ADMIN_NAME: ${ADMIN_NAME:-Owner}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      PAPERCLIP_PUBLIC_URL: ${PAPERCLIP_PUBLIC_URL:-http://localhost:3100}
+      PAPERCLIP_INSTANCE_ID: default
+    volumes:
+      - paperclip-data:/paperclip
+
+  tailscale:
+    image: tailscale/tailscale:latest
+    hostname: ${TS_HOSTNAME:-hermes-paperclip}
+    restart: unless-stopped
+    environment:
+      TS_AUTHKEY: ${TS_AUTHKEY}
+      TS_STATE_DIR: /var/lib/tailscale
+      TS_USERSPACE: "false"
+      TS_EXTRA_ARGS: "--ssh --accept-routes"
+      TS_SERVE_CONFIG: /config/serve.json
+    entrypoint: ["sh", "-c"]
+    command:
+      - |
+        mkdir -p /config
+        wget -qO /config/serve.json \
+          https://raw.githubusercontent.com/dandacompany/hermes-paperclip-on-hostinger/main/tailscale/serve.json
+        exec /usr/local/bin/containerboot
+    volumes:
+      - tailscale-state:/var/lib/tailscale
+      - /dev/net/tun:/dev/net/tun
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    depends_on:
+      hermes-dashboard:
+        condition: service_started
+      hermes-tui:
+        condition: service_started
+      paperclip:
+        condition: service_started
+
+volumes:
+  hermes-data:
+  paperclip-data:
+  tailscale-state:

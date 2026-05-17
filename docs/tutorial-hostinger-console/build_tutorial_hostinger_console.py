@@ -66,6 +66,22 @@ def design_block(label: str, goal: str, principles: list[str], components: list[
     """
 
 
+def figure_block(filename: str, caption: str) -> str:
+    """Render a screenshot figure. Falls back to placeholder SVG if file missing."""
+    asset_dir = BASE / "assets"
+    target = asset_dir / filename
+    src = filename if target.exists() else "assets/placeholder.svg"
+    label = filename if not target.exists() else ""
+    label_html = f"<span class=\"placeholder-tag\">PLACEHOLDER · {esc(label)}</span>" if label else ""
+    return f"""
+    <figure class="screenshot">
+      <img src="assets/{esc(src) if target.exists() else 'placeholder.svg'}" alt="{esc(caption)}" loading="lazy">
+      {label_html}
+      <figcaption>{esc(caption)}</figcaption>
+    </figure>
+    """
+
+
 def table(rows: list[tuple[str, ...]], headers: tuple[str, ...]) -> str:
     body_html = "\n".join(
         "<tr>" + "".join(f"<td>{esc(c)}</td>" for c in row) + "</tr>"
@@ -287,34 +303,45 @@ SECTIONS = [
                 "기존에 다른 Docker Manager 앱이 깔려 있어도 충돌하지 않습니다 (다른 프로젝트 이름·다른 볼륨).",
             ),
             note_block(
-                "03-3. 새 프로젝트 시작",
-                "오른쪽 위 <strong>Create new project</strong> 를 누르고, 원클릭 템플릿 대신 "
-                "<strong>Compose</strong> (또는 <em>Use existing Compose file</em>) 옵션을 선택합니다. "
-                "Project name 은 <code>hermes-paperclip</code> 으로 입력합니다.",
+                "03-3. 빈 프로젝트 화면",
+                "처음 진입하면 <strong>첫 배포를 시작하세요</strong> 안내가 보입니다. 가운데의 검은색 <strong>컴포즈</strong> 버튼을 누르면 3가지 방식이 펼쳐집니다.",
             ),
+            figure_block("01-hpanel-vps.png", "VPS 목록 페이지에서 사용할 서버의 관리 진입."),
+            figure_block("02-docker-manager.png", "Docker Manager 의 빈 프로젝트 상태 (첫 배포 안내 + 컴포즈 버튼)."),
         ],
     },
     {
         "num": "04",
-        "title": "Compose YAML 붙여넣기",
-        "lede": "아래 YAML 전체를 콘솔의 Compose 편집기에 그대로 붙여넣습니다. 외부 파일 의존이 없는 단일 본문입니다.",
+        "title": "URL 에서 컴포즈 가져오기",
+        "lede": "컴포즈 드롭다운의 3가지 옵션 중 <strong>URL 에서 컴포즈 가져오기</strong> 를 선택합니다. 이 저장소의 Raw URL 을 붙여넣기만 하면 됩니다.",
         "blocks": [
             note_block(
-                "04-1. 핵심 포인트",
-                "Hermes 와 Paperclip 두 이미지에 <code>platform: linux/amd64</code> 가 박혀 있어 Hostinger VPS (amd64) 에 그대로 부팅됩니다. "
-                "Tailscale 사이드카는 부팅 직후 <code>tailscale/serve.json</code> 라우팅 파일을 이 저장소의 GitHub Raw 에서 받아 적용합니다 — 추가 파일 업로드가 필요 없습니다.",
+                "04-1. 3가지 옵션 중 가운데",
+                "<strong>수동으로 컴포즈 구성</strong> 은 textarea 에 직접 YAML 을 붙여넣는 방식, "
+                "<strong>원클릭 배포</strong> 는 Hostinger 가 제공하는 단일 앱 템플릿입니다. "
+                "이 경우 <strong>URL 에서 컴포즈 가져오기</strong> 가 가장 빠릅니다 — 텍스트 없이 한 줄 입력으로 끝납니다.",
             ),
+            figure_block("03-compose-options.png", "컴포즈 드롭다운 — 가운데 URL 에서 컴포즈 가져오기 선택."),
             code_block(
-                "04-2. docker-compose.yml — 그대로 붙여넣기",
-                COMPOSE_YAML,
-                "yaml",
+                "04-2. 컴포즈 URL",
+                """
+https://raw.githubusercontent.com/dandacompany/hermes-paperclip-on-hostinger/main/docker-compose.console.yml
+                """,
+                "text",
             ),
+            note_block(
+                "04-3. 무엇이 들어 있나",
+                "단일 self-contained 파일로 init 컨테이너 2개, Hermes TUI · Dashboard, Paperclip, Tailscale 사이드카까지 모두 정의되어 있습니다. "
+                "Tailscale 사이드카는 부팅 직후 같은 저장소의 <code>tailscale/serve.json</code> 라우팅 파일을 GitHub Raw 에서 받아 적용하므로 추가 파일 업로드가 필요 없습니다. "
+                "두 Hostinger 이미지에 <code>platform: linux/amd64</code> 가 박혀 있어 VPS 에서 그대로 부팅됩니다.",
+            ),
+            figure_block("04-compose-imported.png", "URL 입력 후 컴포즈가 콘솔로 가져와진 화면 (서비스 목록 미리보기)."),
         ],
     },
     {
         "num": "05",
         "title": "환경변수 입력",
-        "lede": "콘솔의 Environment variables 폼에 6개 변수를 등록합니다. 비밀번호는 미리 32자 랜덤 문자열로 만들어 둡니다.",
+        "lede": "컴포즈를 가져온 다음 화면에서 6개 변수를 등록합니다. 비밀번호는 미리 32자 랜덤 문자열로 만들어 둡니다.",
         "blocks": [
             code_block(
                 "05-1. 비밀번호를 미리 만든다 (호스트 어디서나 한 번)",
@@ -344,6 +371,7 @@ openssl rand -base64 32 | tr -d '/+=' | head -c 32 ; echo
                 "05-3. 변수 입력 후 저장",
                 "콘솔의 <strong>Save</strong> 또는 <strong>Add variable</strong> 행동으로 6개 모두 등록합니다. 이 시점엔 컨테이너가 아직 부팅 안 됩니다.",
             ),
+            figure_block("05-env-vars.png", "Environment variables 폼에 6개 키·값이 입력된 상태."),
         ],
     },
     {
@@ -374,6 +402,8 @@ openssl rand -base64 32 | tr -d '/+=' | head -c 32 ; echo
                 "<em>Switching ipn state Starting -> Running</em> 과 "
                 "<em>serve: creating a new proxy handler for http://hermes-dashboard:9119</em> 등 3개의 proxy handler 로그를 확인합니다.",
             ),
+            figure_block("06-containers.png", "6개 컨테이너가 모두 부팅된 Docker Manager 화면 (init 2개 Exited, 나머지 4개 Running)."),
+            figure_block("07-logs.png", "tailscale 사이드카 컨테이너의 Logs 뷰 — serve 라우팅 3건 적용 로그."),
         ],
     },
     {
@@ -455,6 +485,7 @@ openssl rand -base64 32 | tr -d '/+=' | head -c 32 ; echo
                 "7-2 처럼 메시 FQDN 으로 갱신하거나 <code>http://localhost:3100</code> 으로 임시 복구합니다. "
                 "그 외 항목은 저장소의 <code>docs/EXPOSURE-tailscale.md</code> 트러블슈팅 절을 따릅니다.",
             ),
+            figure_block("08-ops.png", "개별 컨테이너의 Restart · Logs · Env 액션 메뉴."),
         ],
     },
 ]
@@ -666,6 +697,43 @@ HEAD = """<!doctype html>
     tr:last-child td { border-bottom: 0; }
     a { color: var(--moss-light); }
     a:hover { color: var(--moss); }
+    figure.screenshot {
+      margin: 28px 0;
+      padding: 0;
+      border: 1px solid var(--stone-200);
+      border-radius: 18px;
+      overflow: hidden;
+      background: var(--cream);
+      box-shadow: 0 18px 50px rgba(17, 17, 17, .05);
+      position: relative;
+    }
+    figure.screenshot img {
+      display: block;
+      width: 100%;
+      height: auto;
+      background: var(--sand-100);
+    }
+    figure.screenshot figcaption {
+      padding: 12px 18px;
+      border-top: 1px solid var(--stone-200);
+      color: var(--stone-500);
+      font-size: 13px;
+      line-height: 1.55;
+      background: var(--cream);
+    }
+    figure.screenshot .placeholder-tag {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(184, 74, 44, .15);
+      color: var(--red-soft);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
     footer {
       padding: 50px 32px 70px;
       border-top: 1px solid var(--stone-200);

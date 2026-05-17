@@ -204,6 +204,43 @@
     tr:last-child td { border-bottom: 0; }
     a { color: var(--moss-light); }
     a:hover { color: var(--moss); }
+    figure.screenshot {
+      margin: 28px 0;
+      padding: 0;
+      border: 1px solid var(--stone-200);
+      border-radius: 18px;
+      overflow: hidden;
+      background: var(--cream);
+      box-shadow: 0 18px 50px rgba(17, 17, 17, .05);
+      position: relative;
+    }
+    figure.screenshot img {
+      display: block;
+      width: 100%;
+      height: auto;
+      background: var(--sand-100);
+    }
+    figure.screenshot figcaption {
+      padding: 12px 18px;
+      border-top: 1px solid var(--stone-200);
+      color: var(--stone-500);
+      font-size: 13px;
+      line-height: 1.55;
+      background: var(--cream);
+    }
+    figure.screenshot .placeholder-tag {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(184, 74, 44, .15);
+      color: var(--red-soft);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
     footer {
       padding: 50px 32px 70px;
       border-top: 1px solid var(--stone-200);
@@ -308,160 +345,65 @@
 
 
     <aside class="note-block">
-      <div class="block-label">03-3. 새 프로젝트 시작</div>
-      <p>오른쪽 위 <strong>Create new project</strong> 를 누르고, 원클릭 템플릿 대신 <strong>Compose</strong> (또는 <em>Use existing Compose file</em>) 옵션을 선택합니다. Project name 은 <code>hermes-paperclip</code> 으로 입력합니다.</p>
+      <div class="block-label">03-3. 빈 프로젝트 화면</div>
+      <p>처음 진입하면 <strong>첫 배포를 시작하세요</strong> 안내가 보입니다. 가운데의 검은색 <strong>컴포즈</strong> 버튼을 누르면 3가지 방식이 펼쳐집니다.</p>
     </aside>
+
+
+    <figure class="screenshot">
+      <img src="assets/01-hpanel-vps.png" alt="VPS 목록 페이지에서 사용할 서버의 관리 진입." loading="lazy">
+
+      <figcaption>VPS 목록 페이지에서 사용할 서버의 관리 진입.</figcaption>
+    </figure>
+
+
+    <figure class="screenshot">
+      <img src="assets/02-docker-manager.png" alt="Docker Manager 의 빈 프로젝트 상태 (첫 배포 안내 + 컴포즈 버튼)." loading="lazy">
+
+      <figcaption>Docker Manager 의 빈 프로젝트 상태 (첫 배포 안내 + 컴포즈 버튼).</figcaption>
+    </figure>
 
     </section>
 
 
     <section class="step" id="step-04">
       <div class="section-num">STEP 04</div>
-      <h2>Compose YAML 붙여넣기</h2>
-      <p class="lede">아래 YAML 전체를 콘솔의 Compose 편집기에 그대로 붙여넣습니다. 외부 파일 의존이 없는 단일 본문입니다.</p>
+      <h2>URL 에서 컴포즈 가져오기</h2>
+      <p class="lede">컴포즈 드롭다운의 3가지 옵션 중 &lt;strong&gt;URL 에서 컴포즈 가져오기&lt;/strong&gt; 를 선택합니다. 이 저장소의 Raw URL 을 붙여넣기만 하면 됩니다.</p>
 
     <aside class="note-block">
-      <div class="block-label">04-1. 핵심 포인트</div>
-      <p>Hermes 와 Paperclip 두 이미지에 <code>platform: linux/amd64</code> 가 박혀 있어 Hostinger VPS (amd64) 에 그대로 부팅됩니다. Tailscale 사이드카는 부팅 직후 <code>tailscale/serve.json</code> 라우팅 파일을 이 저장소의 GitHub Raw 에서 받아 적용합니다 — 추가 파일 업로드가 필요 없습니다.</p>
+      <div class="block-label">04-1. 3가지 옵션 중 가운데</div>
+      <p><strong>수동으로 컴포즈 구성</strong> 은 textarea 에 직접 YAML 을 붙여넣는 방식, <strong>원클릭 배포</strong> 는 Hostinger 가 제공하는 단일 앱 템플릿입니다. 이 경우 <strong>URL 에서 컴포즈 가져오기</strong> 가 가장 빠릅니다 — 텍스트 없이 한 줄 입력으로 끝납니다.</p>
     </aside>
+
+
+    <figure class="screenshot">
+      <img src="assets/03-compose-options.png" alt="컴포즈 드롭다운 — 가운데 URL 에서 컴포즈 가져오기 선택." loading="lazy">
+
+      <figcaption>컴포즈 드롭다운 — 가운데 URL 에서 컴포즈 가져오기 선택.</figcaption>
+    </figure>
 
 
     <div class="code-block">
       <div class="code-header">
         <span class="dots"><i></i><i></i><i></i></span>
-        <span>04-2. docker-compose.yml — 그대로 붙여넣기</span>
+        <span>04-2. 컴포즈 URL</span>
       </div>
-      <pre><code class="language-yaml">name: hermes-paperclip
-
-services:
-  hermes-init:
-    image: ghcr.io/hostinger/hvps-hermes-agent:latest
-    platform: linux/amd64
-    user: &quot;0:0&quot;
-    entrypoint: [&quot;sh&quot;, &quot;-c&quot;]
-    command:
-      - |
-        set -e
-        mkdir -p /opt/data
-        chown -R 10000:10000 /opt/data
-        echo &quot;hermes-init: ready&quot;
-    volumes:
-      - hermes-data:/opt/data
-    restart: &quot;no&quot;
-
-  paperclip-init:
-    image: ghcr.io/hostinger/hvps-paperclip:latest
-    platform: linux/amd64
-    user: &quot;0:0&quot;
-    entrypoint: [&quot;sh&quot;, &quot;-c&quot;]
-    command:
-      - |
-        set -e
-        mkdir -p /paperclip
-        chown -R 1000:1000 /paperclip
-        echo &quot;paperclip-init: ready&quot;
-    volumes:
-      - paperclip-data:/paperclip
-    restart: &quot;no&quot;
-
-  hermes-tui:
-    image: ghcr.io/hostinger/hvps-hermes-agent:latest
-    platform: linux/amd64
-    restart: unless-stopped
-    depends_on:
-      hermes-init:
-        condition: service_completed_successfully
-    environment:
-      ADMIN_USERNAME: ${ADMIN_USERNAME}
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
-    entrypoint: [&quot;/bin/sh&quot;, &quot;-c&quot;]
-    command:
-      - |
-        exec gosu hermes ttyd \
-          --port 4860 \
-          -c &quot;$$ADMIN_USERNAME:$$ADMIN_PASSWORD&quot; \
-          -W \
-          -t titleFixed=&quot;Hermes Agent&quot; \
-          -t disableResizeOverlay=true \
-          /hermes.sh
-    volumes:
-      - hermes-data:/opt/data
-
-  hermes-dashboard:
-    image: ghcr.io/hostinger/hvps-hermes-agent:latest
-    platform: linux/amd64
-    restart: unless-stopped
-    depends_on:
-      hermes-init:
-        condition: service_completed_successfully
-    user: &quot;10000:10000&quot;
-    entrypoint: [&quot;/opt/hermes/.venv/bin/hermes&quot;]
-    command:
-      - &quot;dashboard&quot;
-      - &quot;--host&quot;
-      - &quot;0.0.0.0&quot;
-      - &quot;--port&quot;
-      - &quot;9119&quot;
-      - &quot;--no-open&quot;
-      - &quot;--skip-build&quot;
-      - &quot;--insecure&quot;
-    environment:
-      HERMES_HOME: /opt/data
-    volumes:
-      - hermes-data:/opt/data
-
-  paperclip:
-    image: ghcr.io/hostinger/hvps-paperclip:latest
-    platform: linux/amd64
-    restart: unless-stopped
-    depends_on:
-      paperclip-init:
-        condition: service_completed_successfully
-    environment:
-      ADMIN_NAME: ${ADMIN_NAME:-Owner}
-      ADMIN_EMAIL: ${ADMIN_EMAIL}
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
-      PAPERCLIP_PUBLIC_URL: ${PAPERCLIP_PUBLIC_URL:-http://localhost:3100}
-      PAPERCLIP_INSTANCE_ID: default
-    volumes:
-      - paperclip-data:/paperclip
-
-  tailscale:
-    image: tailscale/tailscale:latest
-    hostname: ${TS_HOSTNAME:-hermes-paperclip}
-    restart: unless-stopped
-    environment:
-      TS_AUTHKEY: ${TS_AUTHKEY}
-      TS_STATE_DIR: /var/lib/tailscale
-      TS_USERSPACE: &quot;false&quot;
-      TS_EXTRA_ARGS: &quot;--ssh --accept-routes&quot;
-      TS_SERVE_CONFIG: /config/serve.json
-    entrypoint: [&quot;sh&quot;, &quot;-c&quot;]
-    command:
-      - |
-        mkdir -p /config
-        wget -qO /config/serve.json \
-          https://raw.githubusercontent.com/dandacompany/hermes-paperclip-on-hostinger/main/tailscale/serve.json
-        exec /usr/local/bin/containerboot
-    volumes:
-      - tailscale-state:/var/lib/tailscale
-      - /dev/net/tun:/dev/net/tun
-    cap_add:
-      - NET_ADMIN
-      - NET_RAW
-    depends_on:
-      hermes-dashboard:
-        condition: service_started
-      hermes-tui:
-        condition: service_started
-      paperclip:
-        condition: service_started
-
-volumes:
-  hermes-data:
-  paperclip-data:
-  tailscale-state:</code></pre>
+      <pre><code class="language-text">https://raw.githubusercontent.com/dandacompany/hermes-paperclip-on-hostinger/main/docker-compose.console.yml</code></pre>
     </div>
+
+
+    <aside class="note-block">
+      <div class="block-label">04-3. 무엇이 들어 있나</div>
+      <p>단일 self-contained 파일로 init 컨테이너 2개, Hermes TUI · Dashboard, Paperclip, Tailscale 사이드카까지 모두 정의되어 있습니다. Tailscale 사이드카는 부팅 직후 같은 저장소의 <code>tailscale/serve.json</code> 라우팅 파일을 GitHub Raw 에서 받아 적용하므로 추가 파일 업로드가 필요 없습니다. 두 Hostinger 이미지에 <code>platform: linux/amd64</code> 가 박혀 있어 VPS 에서 그대로 부팅됩니다.</p>
+    </aside>
+
+
+    <figure class="screenshot">
+      <img src="assets/placeholder.svg" alt="URL 입력 후 컴포즈가 콘솔로 가져와진 화면 (서비스 목록 미리보기)." loading="lazy">
+      <span class="placeholder-tag">PLACEHOLDER · 04-compose-imported.png</span>
+      <figcaption>URL 입력 후 컴포즈가 콘솔로 가져와진 화면 (서비스 목록 미리보기).</figcaption>
+    </figure>
 
     </section>
 
@@ -469,7 +411,7 @@ volumes:
     <section class="step" id="step-05">
       <div class="section-num">STEP 05</div>
       <h2>환경변수 입력</h2>
-      <p class="lede">콘솔의 Environment variables 폼에 6개 변수를 등록합니다. 비밀번호는 미리 32자 랜덤 문자열로 만들어 둡니다.</p>
+      <p class="lede">컴포즈를 가져온 다음 화면에서 6개 변수를 등록합니다. 비밀번호는 미리 32자 랜덤 문자열로 만들어 둡니다.</p>
 
     <div class="code-block">
       <div class="code-header">
@@ -503,6 +445,13 @@ openssl rand -base64 32 | tr -d &#x27;/+=&#x27; | head -c 32 ; echo</code></pre>
       <p>콘솔의 <strong>Save</strong> 또는 <strong>Add variable</strong> 행동으로 6개 모두 등록합니다. 이 시점엔 컨테이너가 아직 부팅 안 됩니다.</p>
     </aside>
 
+
+    <figure class="screenshot">
+      <img src="assets/placeholder.svg" alt="Environment variables 폼에 6개 키·값이 입력된 상태." loading="lazy">
+      <span class="placeholder-tag">PLACEHOLDER · 05-env-vars.png</span>
+      <figcaption>Environment variables 폼에 6개 키·값이 입력된 상태.</figcaption>
+    </figure>
+
     </section>
 
 
@@ -533,6 +482,20 @@ openssl rand -base64 32 | tr -d &#x27;/+=&#x27; | head -c 32 ; echo</code></pre>
       <div class="block-label">06-4. Tailscale 사이드카 로그 확인</div>
       <p><code>tailscale</code> 컨테이너 카드의 <strong>Logs</strong> 를 열어 <em>Switching ipn state Starting -> Running</em> 과 <em>serve: creating a new proxy handler for http://hermes-dashboard:9119</em> 등 3개의 proxy handler 로그를 확인합니다.</p>
     </aside>
+
+
+    <figure class="screenshot">
+      <img src="assets/placeholder.svg" alt="6개 컨테이너가 모두 부팅된 Docker Manager 화면 (init 2개 Exited, 나머지 4개 Running)." loading="lazy">
+      <span class="placeholder-tag">PLACEHOLDER · 06-containers.png</span>
+      <figcaption>6개 컨테이너가 모두 부팅된 Docker Manager 화면 (init 2개 Exited, 나머지 4개 Running).</figcaption>
+    </figure>
+
+
+    <figure class="screenshot">
+      <img src="assets/placeholder.svg" alt="tailscale 사이드카 컨테이너의 Logs 뷰 — serve 라우팅 3건 적용 로그." loading="lazy">
+      <span class="placeholder-tag">PLACEHOLDER · 07-logs.png</span>
+      <figcaption>tailscale 사이드카 컨테이너의 Logs 뷰 — serve 라우팅 3건 적용 로그.</figcaption>
+    </figure>
 
     </section>
 
@@ -615,6 +578,13 @@ openssl rand -base64 32 | tr -d &#x27;/+=&#x27; | head -c 32 ; echo</code></pre>
       <div class="block-label">08-4. 문제가 생기면</div>
       <p>Paperclip 이 부팅 직후 죽으면 <code>PAPERCLIP_PUBLIC_URL</code> 값이 잘못된 URL 형식이라는 뜻입니다 (better-auth 가 거부). 7-2 처럼 메시 FQDN 으로 갱신하거나 <code>http://localhost:3100</code> 으로 임시 복구합니다. 그 외 항목은 저장소의 <code>docs/EXPOSURE-tailscale.md</code> 트러블슈팅 절을 따릅니다.</p>
     </aside>
+
+
+    <figure class="screenshot">
+      <img src="assets/placeholder.svg" alt="개별 컨테이너의 Restart · Logs · Env 액션 메뉴." loading="lazy">
+      <span class="placeholder-tag">PLACEHOLDER · 08-ops.png</span>
+      <figcaption>개별 컨테이너의 Restart · Logs · Env 액션 메뉴.</figcaption>
+    </figure>
 
     </section>
 
