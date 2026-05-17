@@ -1,0 +1,26 @@
+services:
+  paperclip-hermes-codex:
+    image: ghcr.io/dandacompany/paperclip-hermes-codex:latest
+    platform: linux/amd64
+    restart: unless-stopped
+    environment:
+      ADMIN_USERNAME: ${ADMIN_USERNAME}
+      ADMIN_NAME:     ${ADMIN_NAME:-Owner}
+      ADMIN_EMAIL:    ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      PAPERCLIP_PUBLIC_URL:           ${PAPERCLIP_PUBLIC_URL:-http://localhost:3100}
+      PAPERCLIP_INSTANCE_ID:          default
+      PAPERCLIP_DEPLOYMENT_MODE:      authenticated
+      PAPERCLIP_DEPLOYMENT_EXPOSURE:  ${PAPERCLIP_DEPLOYMENT_EXPOSURE:-private}
+      PAPERCLIP_AUTH_BASE_URL_MODE:   explicit
+      PAPERCLIP_BIND: lan
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+    volumes:
+      - paperclip-data:/paperclip
+      - hermes-data:/home/node/.hermes
+      - codex-auth:/home/node/.codex
+
+volumes:
+  paperclip-data: {}
+  hermes-data:    {}
+  codex-auth:     {}
