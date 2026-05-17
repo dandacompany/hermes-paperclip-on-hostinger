@@ -471,8 +471,14 @@ openssl rand -base64 32 | tr -d '/+=' | head -c 32 ; echo
             ),
             figure_block("11-paperclip-setup-required.png", "Paperclip Instance setup required 안내. 화면이 표시하는 명령은 'pnpm paperclipai auth bootstrap-ceo' 지만 Hostinger 이미지에선 'pnpm' 접두사 없이 'paperclipai auth bootstrap-ceo' 만 입력합니다 (다음 단계 참고)."),
             note_block(
-                "07-6. 콘솔 터미널에서 invite URL 발급",
-                "Docker Manager → <code>paperclip</code> 컨테이너 카드 → <strong>터미널</strong> 링크 클릭 → 열린 콘솔 창에서 다음 한 줄을 입력합니다 (<strong>안내 화면의 <code>pnpm</code> 접두사는 빼고</strong>): "
+                "07-6a. paperclip 컨테이너 터미널 열기",
+                "Docker Manager 의 프로젝트 상세 페이지에서 컨테이너 카드 목록을 보면 각 카드에 <strong>터미널</strong> 링크가 있습니다. "
+                "<code>hermes-paperclip-on-hostinger-paperclip-1</code> 카드의 터미널 링크를 클릭하면 새 탭에 콘솔 창이 열립니다.",
+            ),
+            figure_block("12-paperclip-terminal-button.png", "컨테이너 카드 목록에서 paperclip 카드의 빨간 박스로 강조된 '터미널' 링크 — 클릭하면 컨테이너 안의 shell 이 새 탭으로 열림."),
+            note_block(
+                "07-6b. 콘솔 터미널에서 invite URL 발급",
+                "열린 콘솔 창의 프롬프트(<code>node@...:~$</code>)에서 다음 한 줄을 입력합니다 (<strong>안내 화면의 <code>pnpm</code> 접두사는 빼고</strong>): "
                 "<br><br>"
                 "<code>paperclipai auth bootstrap-ceo</code>"
                 "<br><br>"
@@ -481,7 +487,7 @@ openssl rand -base64 32 | tr -d '/+=' | head -c 32 ; echo
                 "성공 시 출력의 <code>Invite URL: https://&lt;Full-domain&gt;:3100/invite/pcp_bootstrap_…</code> 한 줄을 그대로 복사. "
                 "07-2b 에서 PAPERCLIP_PUBLIC_URL 을 메시 도메인으로 갱신해 두었기 때문에 invite URL 이 처음부터 메시 도메인으로 발급됩니다.",
             ),
-            figure_block("12-paperclip-rotate-terminal.png", "paperclip 컨테이너 콘솔 터미널 — paperclipai auth bootstrap-ceo 실행 후 'Created bootstrap CEO invite' · 새 Invite URL · Expires 시각 출력."),
+            figure_block("13-paperclip-rotate-terminal.png", "콘솔 터미널 안 — 빨간 박스 위는 입력한 명령 (paperclipai auth bootstrap-ceo), 빨간 박스 아래는 새 Invite URL (메시 Full domain 포함). Expires 시각도 같이 표시."),
             note_block(
                 "07-7. invite URL 열고 admin 가입",
                 "복사한 invite URL 을 같은 디바이스 브라우저 새 탭에 붙여넣어 엽니다. "
@@ -489,8 +495,8 @@ openssl rand -base64 32 | tr -d '/+=' | head -c 32 ; echo
                 "우측 <strong>Create your account</strong> 폼에 Name · Email · Password 입력 → <strong>Create account and continue</strong>. "
                 "가입 완료 시 invite 가 즉시 소진되고 같은 <code>:3100</code> URL 은 다음부터 일반 sign-in 폼으로 전환됩니다.",
             ),
-            figure_block("13-paperclip-invite-signup.png", "invite URL 진입 후 Set up Paperclip / Create your account 두 컬럼 — 좌측 invite 메타데이터, 우측 가입 폼."),
-            figure_block("14-paperclip-workspace.png", "가입 완료 후 Paperclip 워크스페이스 메인 또는 sign-in 페이지."),
+            figure_block("14-paperclip-invite-signup.png", "invite URL 진입 후 Set up Paperclip / Create your account 두 컬럼 — 좌측 invite 메타데이터, 우측 가입 폼."),
+            figure_block("15-paperclip-workspace.png", "가입 완료 후 Paperclip 워크스페이스 메인 또는 sign-in 페이지."),
             note_block(
                 "07-8. PAPERCLIP_PUBLIC_URL 의 역할 정리",
                 "07-2b 에서 갱신한 <code>PAPERCLIP_PUBLIC_URL</code> 한 값이 다음 네 군데를 동시에 결정합니다. "
