@@ -394,16 +394,22 @@
 
 
     <aside class="note-block">
-      <div class="block-label">04-3. 무엇이 들어 있나</div>
-      <p>단일 self-contained 파일로 init 컨테이너 2개, Hermes TUI · Dashboard, Paperclip, Tailscale 사이드카까지 모두 정의되어 있습니다. Tailscale 사이드카는 부팅 직후 같은 저장소의 <code>tailscale/serve.json</code> 라우팅 파일을 GitHub Raw 에서 받아 적용하므로 추가 파일 업로드가 필요 없습니다. 두 Hostinger 이미지에 <code>platform: linux/amd64</code> 가 박혀 있어 VPS 에서 그대로 부팅됩니다.</p>
+      <div class="block-label">04-3. URL · 프로젝트 이름 입력</div>
+      <p><strong>URL</strong> 필드에 위 Raw URL 을 붙여넣고, <strong>프로젝트 이름</strong> 은 <code>hermes-paperclip-on-hostinger</code> 또는 본인이 원하는 짧은 이름으로 입력합니다. 오른쪽 패널에 GitHub · GitLab · Docker Compose 아이콘이 보이는 게 정상 — Hostinger 가 입력한 URL 의 출처를 자동 인식한 표시입니다. <strong>배포</strong> 버튼을 누르면 다음 단계(환경변수 입력)로 넘어갑니다.</p>
     </aside>
 
 
     <figure class="screenshot">
-      <img src="assets/placeholder.svg" alt="URL 입력 후 컴포즈가 콘솔로 가져와진 화면 (서비스 목록 미리보기)." loading="lazy">
-      <span class="placeholder-tag">PLACEHOLDER · 04-compose-imported.png</span>
-      <figcaption>URL 입력 후 컴포즈가 콘솔로 가져와진 화면 (서비스 목록 미리보기).</figcaption>
+      <img src="assets/04-compose-url-input.png" alt="URL · 프로젝트 이름 입력 후 배포 버튼 — 빨간 박스 위치 그대로 따라 입력." loading="lazy">
+
+      <figcaption>URL · 프로젝트 이름 입력 후 배포 버튼 — 빨간 박스 위치 그대로 따라 입력.</figcaption>
     </figure>
+
+
+    <aside class="note-block">
+      <div class="block-label">04-4. 무엇이 들어 있나</div>
+      <p>단일 self-contained 파일로 init 컨테이너 2개, Hermes TUI · Dashboard, Paperclip, Tailscale 사이드카까지 모두 정의되어 있습니다. Tailscale 사이드카는 부팅 직후 같은 저장소의 <code>tailscale/serve.json</code> 라우팅 파일을 GitHub Raw 에서 받아 적용하므로 추가 파일 업로드가 필요 없습니다. 두 Hostinger 이미지에 <code>platform: linux/amd64</code> 가 박혀 있어 VPS 에서 그대로 부팅됩니다.</p>
+    </aside>
 
     </section>
 
