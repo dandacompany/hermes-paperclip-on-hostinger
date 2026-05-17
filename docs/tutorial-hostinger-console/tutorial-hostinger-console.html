@@ -590,8 +590,8 @@ openssl rand -base64 32 | tr -d &#x27;/+=&#x27; | head -c 32 ; echo</code></pre>
 
 
     <aside class="note-block">
-      <div class="block-label">07-6. invite 가 만료됐다면 — rotate 명령</div>
-      <p>invite 만료(기본 3일) 또는 분실 시 컨테이너 안에서 새 invite 를 발급합니다. Docker Manager 의 <code>paperclip</code> 컨테이너 카드 <strong>터미널</strong>(또는 SSH 로 <code>docker exec -it hermes-paperclip-on-hostinger-paperclip-1 sh</code>)에서: <code>node /paperclipai/dist/cli.js auth bootstrap-ceo</code> (Paperclip 버전에 따라 <code>pnpm paperclipai auth bootstrap-ceo</code> 이 동작하기도 함). 출력의 새 invite URL 을 위와 같이 메시 Full domain 으로 바꿔 사용.</p>
+      <div class="block-label">07-6. invite 가 만료 · 사용됨 · 차단됐다면 — rotate 명령</div>
+      <p><strong>Invite not available — This invite may be expired, revoked, or already used.</strong> 안내가 보이면 컨테이너 안에서 새 invite 를 발급합니다. Docker Manager 의 <code>paperclip</code> 컨테이너 카드 <strong>터미널</strong> 또는 SSH 로: <code>docker exec hermes-paperclip-on-hostinger-paperclip-1 paperclipai auth bootstrap-ceo</code>. 출력의 <code>Invite URL</code> 한 줄에 새 토큰 + 메시 도메인이 그대로 나옵니다 (07-2b 의 PAPERCLIP_PUBLIC_URL 덕분). 새 URL 을 브라우저로 열면 Set up Paperclip 페이지가 정상 열림.</p>
     </aside>
 
 
