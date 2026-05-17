@@ -194,7 +194,7 @@ curl -fsSL https://raw.githubusercontent.com/dandacompany/hermes-paperclip-on-ho
   Credentials (Hermes ttyd + Paperclip admin):
     username : hermes
     email    : you@example.com
-    password : U5D7qb8jYuWe0ru7dUMCZ3IsPTqCumYD
+    password : XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  # 32-char random, written to .env (chmod 600)
     ↑ save it; .env is chmod 600. Rotate later with: ./setup.sh --rotate
 
 ==> waiting for Tailscale sidecar to register...
