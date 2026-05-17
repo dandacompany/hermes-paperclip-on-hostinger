@@ -25,6 +25,8 @@ services:
       PAPERCLIP_DEPLOYMENT_MODE:     authenticated
       PAPERCLIP_AUTH_BASE_URL_MODE:  explicit
       PAPERCLIP_BIND: lan
+      HOME: /home/node
+      HERMES_HOME: /home/node/.hermes
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
     volumes:
       - paperclip-data:/paperclip
