@@ -4,7 +4,7 @@ load '../helpers/bats_helpers'
 setup() {
   setup_tmp_home
   mkdir -p "$TMP_HOME/bin"
-  mock_bin codex 'login --device'   # mock codex CLI
+  mock_bin codex 'login --device-auth'   # mock codex CLI
   SCRIPT="$BATS_TEST_DIRNAME/../../scripts/codex-oauth.sh"
 }
 teardown() { teardown_tmp_home; }
@@ -23,9 +23,9 @@ teardown() { teardown_tmp_home; }
   [[ "$output" == *"Codex auth: API key"* ]]
 }
 
-@test "detect-or-prompt: 둘 다 없으면 codex login --device 호출" {
+@test "detect-or-prompt: 둘 다 없으면 codex login --device-auth 호출" {
   unset OPENAI_API_KEY
   run bash "$SCRIPT" detect-or-prompt
   [ "$status" -eq 0 ]
-  [[ "$output" == *"login --device"* ]]
+  [[ "$output" == *"login --device-auth"* ]]
 }

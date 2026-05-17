@@ -16,7 +16,7 @@ case "${1:-}" in
     echo "  Codex OAuth setup required"
     echo "  Open the URL below in any browser and follow steps."
     echo "──────────────────────────────────────────────────────"
-    codex login --device 2>&1 | tee -a "$HERMES_HOME/codex-login.log"
+    codex login --device-auth 2>&1 | tee -a "$HERMES_HOME/codex-login.log"
     echo "✓ Codex OAuth completed and saved to $CODEX_HOME/auth.json"
     ;;
   *)
