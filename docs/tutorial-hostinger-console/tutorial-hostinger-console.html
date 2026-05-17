@@ -1,0 +1,819 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Paperclip + Hermes + Codex — Hostinger 콘솔로 한 페이지에서 끝내기</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --stone-900:#111111; --stone-700:#2a2a2a; --stone-500:#555555;
+      --stone-400:#777777; --stone-200:#c8c4bc;
+      --sand-50:#f5f2ec; --sand-100:#ebe5d8; --sand-200:#e0d8c8;
+      --moss:#1e3f3f; --moss-light:#2d5555; --cream:#faf7f0;
+      --red-soft:#b84a2c; --green-soft:#3a6c49; --terra:#7a5a10;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--sand-50);
+      color: var(--stone-700);
+      font-family: 'Noto Sans KR', system-ui, sans-serif;
+      line-height: 1.75;
+    }
+    .hero {
+      padding: 88px 32px 72px;
+      background: linear-gradient(135deg, var(--sand-100), var(--sand-200));
+      border-bottom: 1px solid var(--stone-200);
+    }
+    .hero-inner, .container { max-width: 820px; margin: 0 auto; }
+    .eyebrow, .section-num, .block-label, .code-header, th {
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+    .eyebrow {
+      display: inline-block;
+      margin-bottom: 18px;
+      color: var(--moss);
+      font-size: 12px;
+      font-weight: 500;
+    }
+    h1, h2 {
+      font-family: 'Noto Serif KR', serif;
+      color: var(--stone-900);
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+    h1 {
+      max-width: 780px;
+      margin: 0;
+      font-size: clamp(34px, 5vw, 52px);
+      font-weight: 900;
+    }
+    .hero p {
+      max-width: 720px;
+      margin: 24px 0 0;
+      color: var(--stone-500);
+      font-size: 17px;
+    }
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 34px;
+    }
+    .meta-grid div {
+      background: rgba(250, 247, 240, .62);
+      border: 1px solid rgba(200, 196, 188, .85);
+      border-radius: 16px;
+      padding: 16px;
+    }
+    .meta-grid dt {
+      margin: 0 0 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--stone-400);
+    }
+    .meta-grid dd { margin: 0; color: var(--stone-700); font-weight: 600; }
+    section.step {
+      padding: 68px 0;
+      border-top: 1px solid var(--stone-200);
+    }
+    .section-num {
+      color: var(--stone-400);
+      font-size: 11px;
+      letter-spacing: .35em;
+    }
+    h2 {
+      margin: 10px 0 14px;
+      font-size: clamp(24px, 3vw, 32px);
+      font-weight: 700;
+    }
+    .lede { margin: 0 0 28px; color: var(--stone-500); font-size: 16px; }
+    .code-block, .note-block, .design-block, .check-block {
+      margin: 22px 0;
+      border: 1px solid var(--stone-200);
+      border-radius: 18px;
+      overflow: hidden;
+      background: var(--cream);
+      box-shadow: 0 18px 50px rgba(17, 17, 17, .05);
+    }
+    .code-block { background: #111111; border-color: #272727; }
+    .code-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 13px 16px;
+      border-bottom: 1px solid #272727;
+      color: #c8c4bc;
+      font-size: 12px;
+    }
+    .dots { display: flex; gap: 7px; }
+    .dots i { width: 11px; height: 11px; border-radius: 999px; display: block; }
+    .dots i:nth-child(1) { background: #ff5f57; }
+    .dots i:nth-child(2) { background: #ffbd2e; }
+    .dots i:nth-child(3) { background: #28c840; }
+    pre {
+      margin: 0;
+      padding: 18px 20px;
+      overflow-x: auto;
+      white-space: pre;
+    }
+    code {
+      color: #f5f2ec;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      line-height: 1.85;
+    }
+    .note-block {
+      padding: 20px 22px;
+      border-left: 5px solid var(--moss);
+    }
+    .check-block {
+      padding: 20px 22px;
+      border-left: 5px solid var(--green-soft);
+      background: rgba(58, 108, 73, .05);
+    }
+    .check-block .block-label { color: var(--green-soft); }
+    .note-block code, .check-block code, .lede code, p code, td code, li code, a code {
+      background: rgba(30, 63, 63, .08);
+      color: var(--stone-900);
+      padding: 1px 6px;
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+    }
+    .block-label {
+      margin-bottom: 10px;
+      color: var(--terra);
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .note-block p, .design-block p, .check-block p { margin: 0; }
+    .design-block { padding: 24px; }
+    .goal {
+      color: var(--stone-900);
+      font-family: 'Noto Serif KR', serif;
+      font-size: 20px;
+      font-weight: 700;
+    }
+    .principles {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin: 22px 0;
+      padding: 0;
+      list-style: none;
+    }
+    .principles li {
+      padding: 16px;
+      border: 1px solid var(--stone-200);
+      border-radius: 14px;
+      background: rgba(245, 242, 236, .65);
+    }
+    .principles span {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--moss);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+    }
+    .principles p { color: var(--stone-700); font-size: 14px; }
+    .component-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .component-grid article {
+      padding: 16px;
+      border-radius: 14px;
+      background: var(--sand-50);
+      border: 1px solid var(--stone-200);
+    }
+    .component-grid strong { color: var(--stone-900); }
+    .component-grid p { margin-top: 8px; color: var(--stone-500); font-size: 14px; }
+    table {
+      width: 100%;
+      margin: 22px 0;
+      border-collapse: collapse;
+      overflow: hidden;
+      border: 1px solid var(--stone-200);
+      border-radius: 16px;
+      background: var(--cream);
+      display: table;
+    }
+    th, td { padding: 14px 16px; border-bottom: 1px solid var(--stone-200); vertical-align: top; }
+    th { color: var(--moss); font-size: 12px; text-align: left; background: var(--sand-100); }
+    td { font-size: 14px; color: var(--stone-700); }
+    tr:last-child td { border-bottom: 0; }
+    a { color: var(--moss-light); }
+    a:hover { color: var(--moss); }
+    figure.screenshot {
+      margin: 28px 0;
+      padding: 0;
+      border: 1px solid var(--stone-200);
+      border-radius: 18px;
+      overflow: hidden;
+      background: var(--cream);
+      box-shadow: 0 18px 50px rgba(17, 17, 17, .05);
+      position: relative;
+    }
+    figure.screenshot img {
+      display: block;
+      width: 100%;
+      height: auto;
+      background: var(--sand-100);
+    }
+    figure.screenshot figcaption {
+      padding: 12px 18px;
+      border-top: 1px solid var(--stone-200);
+      color: var(--stone-500);
+      font-size: 13px;
+      line-height: 1.55;
+      background: var(--cream);
+    }
+    figure.screenshot .placeholder-tag {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(184, 74, 44, .15);
+      color: var(--red-soft);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+    footer {
+      padding: 50px 32px 70px;
+      border-top: 1px solid var(--stone-200);
+      color: var(--stone-500);
+      text-align: center;
+    }
+    footer a { color: var(--moss); }
+    @media (max-width: 720px) {
+      .hero { padding: 58px 22px 48px; }
+      .container { padding: 0 22px; }
+      .meta-grid, .principles, .component-grid { grid-template-columns: 1fr; }
+      section.step { padding: 50px 0; }
+      pre { padding: 16px; }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="hero">
+    <div class="hero-inner">
+      <span class="eyebrow">Hostinger Console · Paperclip × Hermes × Codex — v1</span>
+      <h1>Paperclip + Hermes + Codex — Hostinger 콘솔로 한 페이지에서 끝내기</h1>
+      <p>단일 컨테이너로 묶인 3-도구 스택을 호스팅어 콘솔의 'URL에서 컴포즈 가져오기'로 1분 만에 배포하고, Codex OAuth 1회 인증으로 영구 사용합니다.</p>
+      <dl class="meta-grid">
+        <div><dt>컨테이너</dt><dd>2개 (paperclip-hermes-codex + tailscale)</dd></div>
+        <div><dt>노출 포트</dt><dd>3100 / 9119 / 4860</dd></div>
+        <div><dt>인증</dt><dd>ADMIN_* env 자동 + Codex OAuth 1회</dd></div>
+        <div><dt>업데이트</dt><dd>콘솔 Update 버튼 1클릭</dd></div>
+        <div><dt>데이터 보존</dt><dd>4 named volumes</dd></div>
+        <div><dt>호스팅 비용</dt><dd>Hostinger KVM 2 (2 GB RAM 권장)</dd></div>
+      </dl>
+    </div>
+  </header>
+  <main class="container">
+
+    <section class="step" id="step-01">
+      <div class="section-num">STEP 01</div>
+      <h2>hPanel → VPS → Docker Manager</h2>
+      <p class="lede">Hostinger hPanel 왼쪽 사이드바에서 VPS 항목을 열고 Docker Manager 탭으로 이동합니다.</p>
+
+    <section class="design-block">
+      <div class="block-label">01-1. 이 스택이 하는 일</div>
+      <p class="goal">Paperclip + Hermes + Codex CLI가 단일 컨테이너 안에서 동작합니다. SSH 없이 hPanel 콘솔만으로 배포·운영·업데이트가 완결됩니다.</p>
+      <ol class="principles"><li><span>01</span><p>Paperclip (port 3100) — 에이전트 오케스트레이터 + Web UI. 태스크를 받아 Hermes 워커에 전달합니다.</p></li>
+<li><span>02</span><p>Hermes Dashboard (port 9119) — 세션·스킬·API 키 관리 SPA. 브라우저에서 직접 접근합니다.</p></li>
+<li><span>03</span><p>ttyd Terminal (port 4860) — 브라우저 안 Hermes 쉘. 별도 SSH 없이 CLI를 사용할 수 있습니다.</p></li>
+<li><span>04</span><p>Codex CLI — Hermes가 태스크별로 spawn하는 LLM 백엔드. OpenAI API를 직접 호출합니다.</p></li></ol>
+      <div class="component-grid"><article><strong>paperclip-hermes-codex</strong><p>Paperclip + Hermes + Codex가 하나로 묶인 메인 컨테이너</p></article>
+<article><strong>tailscale</strong><p>Tailscale 메시 사이드카 — .ts.net FQDN + HTTPS 자동 인증서</p></article>
+<article><strong>4 named volumes</strong><p>paperclip-data / hermes-data / codex-auth / tailscale-state — 이미지 업데이트해도 영구 보존</p></article></div>
+    </section>
+
+
+    <table>
+      <thead><tr><th>항목</th><th>값</th><th>설명</th></tr></thead>
+      <tbody><tr><td>컨테이너</td><td>2개</td><td>paperclip-hermes-codex + tailscale</td></tr>
+<tr><td>노출 포트</td><td>3100 / 9119 / 4860</td><td>Tailscale HTTPS로 외부 노출</td></tr>
+<tr><td>인증</td><td>ADMIN_* env 자동 + Codex OAuth 1회</td><td>첫 부팅 시 entrypoint가 자동 처리</td></tr>
+<tr><td>업데이트</td><td>콘솔 Update 버튼 1클릭</td><td>docker compose pull + up -d</td></tr>
+<tr><td>데이터 보존</td><td>named volume 4개</td><td>컨테이너 재생성해도 유지</td></tr>
+<tr><td>권장 RAM</td><td>2 GB 이상</td><td>Hostinger KVM 2 플랜 이상</td></tr></tbody>
+    </table>
+
+
+    <figure class="screenshot">
+      <img src="assets/placeholder.svg" alt="hPanel 왼쪽 사이드바 → VPS → Docker Manager 탭" loading="lazy">
+      <span class="placeholder-tag">PLACEHOLDER · 01-hpanel-vps.png</span>
+      <figcaption>hPanel 왼쪽 사이드바 → VPS → Docker Manager 탭</figcaption>
+    </figure>
+
+
+    <aside class="note-block">
+      <div class="block-label">01-2. 콘솔 접근 경로</div>
+      <p>hPanel 로그인 → 왼쪽 사이드바 <strong>VPS</strong> 클릭 → 서버 선택 → 상단 탭 중 <strong>Docker Manager</strong>를 클릭합니다. Docker Manager가 보이지 않으면 VPS 플랜이 Docker 지원 여부를 확인하세요.</p>
+    </aside>
+
+    </section>
+
+
+    <section class="step" id="step-02">
+      <div class="section-num">STEP 02</div>
+      <h2>URL에서 컴포즈 가져오기</h2>
+      <p class="lede">Docker Manager의 &quot;URL에서 컴포즈 가져오기&quot; 입력란에 아래 URL을 붙여넣고 가져오기를 클릭합니다.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="dots"><i></i><i></i><i></i></span>
+        <span>02-1. Compose URL</span>
+      </div>
+      <pre><code class="language-text">https://raw.githubusercontent.com/dandacompany/paperclip-hermes-codex-on-hostinger/main/docker-compose.console.yml</code></pre>
+    </div>
+
+
+    <figure class="screenshot">
+      <img src="assets/placeholder.svg" alt="Docker Manager — URL에서 컴포즈 가져오기 입력란에 URL 붙여넣기" loading="lazy">
+      <span class="placeholder-tag">PLACEHOLDER · 02-docker-manager-url-import.png</span>
+      <figcaption>Docker Manager — URL에서 컴포즈 가져오기 입력란에 URL 붙여넣기</figcaption>
+    </figure>
+
+
+    <aside class="note-block">
+      <div class="block-label">02-2. console.yml이 하는 일</div>
+      <p><code>docker-compose.console.yml</code>은 단독 실행 가능한 self-contained 파일입니다. 메인 컨테이너(<code>paperclip-hermes-codex</code>)와 Tailscale 사이드카를 함께 정의하며, 부팅 시 GitHub Raw에서 <code>tailscale/serve.json</code>을 자동으로 내려받아 3100·9119·4860 포트를 HTTPS로 라우팅합니다. SSH나 별도 파일 업로드 없이 이 URL 한 줄로 전체 스택이 올라옵니다.</p>
+    </aside>
+
+    </section>
+
+
+    <section class="step" id="step-03">
+      <div class="section-num">STEP 03</div>
+      <h2>환경변수 입력</h2>
+      <p class="lede">가져온 컴포즈 아래 환경변수 폼에 아래 값을 입력합니다. OPENAI_API_KEY는 지금 비워두어도 됩니다.</p>
+
+    <table>
+      <thead><tr><th>변수</th><th>필요 시점</th><th>설명</th></tr></thead>
+      <tbody><tr><td>ADMIN_USERNAME</td><td>필수</td><td>Paperclip + Hermes TUI 로그인 ID (예: admin)</td></tr>
+<tr><td>ADMIN_EMAIL</td><td>필수</td><td>Paperclip 관리자 이메일</td></tr>
+<tr><td>ADMIN_PASSWORD</td><td>필수</td><td>Paperclip + Hermes TUI 비밀번호 (8자 이상 권장)</td></tr>
+<tr><td>ADMIN_NAME</td><td>선택</td><td>표시 이름, 기본값 Owner</td></tr>
+<tr><td>TS_AUTHKEY</td><td>필수</td><td>Tailscale Auth Key — 아래 발급 방법 참고</td></tr>
+<tr><td>TS_HOSTNAME</td><td>선택</td><td>Tailscale 노드 이름, 기본값 paperclip</td></tr>
+<tr><td>PAPERCLIP_PUBLIC_URL</td><td>나중에 입력</td><td>STEP 05에서 Tailscale FQDN 확인 후 입력</td></tr>
+<tr><td>OPENAI_API_KEY</td><td>선택</td><td>Codex OAuth 대신 API 키로 인증할 때 입력. 지금은 비워두기</td></tr></tbody>
+    </table>
+
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="dots"><i></i><i></i><i></i></span>
+        <span>03-2. Tailscale Auth Key 발급</span>
+      </div>
+      <pre><code class="language-bash"># 브라우저에서 아래 URL 열기
+https://login.tailscale.com/admin/settings/keys
+
+# &quot;Generate auth key&quot; 클릭 후:
+#   - Reusable: 체크
+#   - Expiry: 90일 이상
+#   - Tags: 선택 사항
+# 발급된 tskey-auth-... 값을 TS_AUTHKEY 필드에 붙여넣습니다.</code></pre>
+    </div>
+
+
+    <figure class="screenshot">
+      <img src="assets/placeholder.svg" alt="환경변수 폼 입력 — ADMIN_*, TS_AUTHKEY 입력, OPENAI_API_KEY는 빈칸" loading="lazy">
+      <span class="placeholder-tag">PLACEHOLDER · 03-env-vars-form.png</span>
+      <figcaption>환경변수 폼 입력 — ADMIN_*, TS_AUTHKEY 입력, OPENAI_API_KEY는 빈칸</figcaption>
+    </figure>
+
+
+    <aside class="note-block">
+      <div class="block-label">03-3. OPENAI_API_KEY를 지금 비워두는 이유</div>
+      <p>STEP 08에서 Codex OAuth 1회 브라우저 인증을 완료하면 토큰이 <code>codex-auth</code> named volume에 영구 저장됩니다. 이후 컨테이너를 재시작하거나 이미지를 업데이트해도 재인증이 필요 없습니다. API 키 방식을 선호한다면 <code>OPENAI_API_KEY</code>를 지금 입력해도 되며, Codex CLI 0.122+ 이상은 이 값을 자동으로 <code>auth.json</code>으로 변환합니다.</p>
+    </aside>
+
+    </section>
+
+
+    <section class="step" id="step-04">
+      <div class="section-num">STEP 04</div>
+      <h2>배포 + 컨테이너 2개 상태 확인</h2>
+      <p class="lede">&quot;배포&quot; 버튼을 클릭합니다. Docker Manager가 이미지를 pull하고 두 컨테이너를 순서대로 시작합니다.</p>
+
+    <aside class="note-block">
+      <div class="block-label">04-1. 배포 순서</div>
+      <p>Tailscale 사이드카가 먼저 healthy 상태가 된 뒤 <code>paperclip-hermes-codex</code> 컨테이너가 시작됩니다 (<code>depends_on: tailscale: condition: service_healthy</code>). 전체 배포는 이미지 크기에 따라 1~3분이 소요됩니다.</p>
+    </aside>
+
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="dots"><i></i><i></i><i></i></span>
+        <span>04-2. 정상 시작 시 컨테이너 목록 (2개)</span>
+      </div>
+      <pre><code class="language-text">paperclip-hermes-codex-on-hostinger-tailscale-1            running
+paperclip-hermes-codex-on-hostinger-paperclip-hermes-codex-1  running</code></pre>
+    </div>
+
+
+    <figure class="screenshot">
+      <img src="assets/placeholder.svg" alt="Docker Manager — 컨테이너 2개 running 상태" loading="lazy">
+      <span class="placeholder-tag">PLACEHOLDER · 04-containers-running.png</span>
+      <figcaption>Docker Manager — 컨테이너 2개 running 상태</figcaption>
+    </figure>
+
+
+    <aside class="check-block">
+      <div class="block-label">04-3. 확인 기준</div>
+      <p>컨테이너 2개 모두 <strong>running</strong> 상태입니다. v0.1 사이드카 구조의 <code>paperclip-init</code> / <code>hermes-init</code>은 v1에서 사라졌습니다 — 권한 설정과 bootstrap이 <code>entrypoint.sh</code> 안으로 통합되었기 때문입니다. 하나라도 <strong>exited</strong>이면 로그 버튼을 눌러 오류 메시지를 확인하세요.</p>
+    </aside>
+
+
+    <aside class="note-block">
+      <div class="block-label">04-4. 로그 확인 방법</div>
+      <p>Docker Manager 컨테이너 행 오른쪽 <strong>Logs</strong> 버튼 클릭 → <code>paperclip-hermes-codex</code> 컨테이너 로그에서 다음 줄을 찾습니다: <br><code>[entrypoint] Paperclip bootstrap complete</code><br><code>[entrypoint] Hermes bootstrap complete</code><br><code>[entrypoint] Starting supervisor...</code></p>
+    </aside>
+
+    </section>
+
+
+    <section class="step" id="step-05">
+      <div class="section-num">STEP 05</div>
+      <h2>Tailscale FQDN 확인 + PAPERCLIP_PUBLIC_URL 재배포</h2>
+      <p class="lede">Tailscale이 노드 FQDN을 할당하면 이를 PAPERCLIP_PUBLIC_URL에 등록하고 재배포합니다. 이 단계를 건너뛰면 로그인 링크에서 403이 납니다.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="dots"><i></i><i></i><i></i></span>
+        <span>05-1. Tailscale FQDN 확인 방법</span>
+      </div>
+      <pre><code class="language-bash"># 방법 A — Tailscale Admin 콘솔
+# https://login.tailscale.com/admin/machines
+# → 노드 이름(TS_HOSTNAME)을 찾아 Machine Name(FQDN) 복사
+# 예: paperclip.tail1234ab.ts.net
+
+# 방법 B — Docker Manager 로그
+# tailscale 컨테이너 로그 → &quot;tailscale up complete&quot; 이후 줄에서
+# &quot;https://&lt;fqdn&gt;&quot; 형식으로 노출됩니다.</code></pre>
+    </div>
+
+
+    <figure class="screenshot">
+      <img src="assets/placeholder.svg" alt="Tailscale Admin → Machines — 노드 FQDN 확인" loading="lazy">
+      <span class="placeholder-tag">PLACEHOLDER · 05-tailscale-fqdn.png</span>
+      <figcaption>Tailscale Admin → Machines — 노드 FQDN 확인</figcaption>
+    </figure>
+
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="dots"><i></i><i></i><i></i></span>
+        <span>05-2. PAPERCLIP_PUBLIC_URL 값 형식</span>
+      </div>
+      <pre><code class="language-bash"># FQDN이 paperclip.tail1234ab.ts.net 이라면:
+PAPERCLIP_PUBLIC_URL=https://paperclip.tail1234ab.ts.net:3100</code></pre>
+    </div>
+
+
+    <aside class="note-block">
+      <div class="block-label">05-3. 왜 재배포가 필요한가</div>
+      <p>Paperclip은 <code>better-auth</code>를 사용하며, 허용 origin 목록을 부팅 시점의 <code>PAPERCLIP_PUBLIC_URL</code> 값에서 파생합니다. 이 값이 실제 접근 도메인과 다르면 로그인 시 <strong>Invalid origin / 403</strong>이 발생합니다. Tailscale FQDN은 첫 배포 이전에는 알 수 없으므로, STEP 04 배포 → FQDN 확인 → 환경변수 갱신 → 재배포 순서가 정상 흐름입니다.</p>
+    </aside>
+
+
+    <figure class="screenshot">
+      <img src="assets/placeholder.svg" alt="환경변수 폼 — PAPERCLIP_PUBLIC_URL 입력 후 재배포" loading="lazy">
+      <span class="placeholder-tag">PLACEHOLDER · 05-redeploy-env.png</span>
+      <figcaption>환경변수 폼 — PAPERCLIP_PUBLIC_URL 입력 후 재배포</figcaption>
+    </figure>
+
+
+    <aside class="check-block">
+      <div class="block-label">05-4. 확인 기준</div>
+      <p><code>PAPERCLIP_PUBLIC_URL</code>이 <code>https://&lt;fqdn&gt;:3100</code> 형식으로 저장되었고 컨테이너 2개가 다시 running 상태입니다.</p>
+    </aside>
+
+    </section>
+
+
+    <section class="step" id="step-06">
+      <div class="section-num">STEP 06</div>
+      <h2>첫 접속 — Paperclip 로그인</h2>
+      <p class="lede">브라우저에서 https://&lt;fqdn&gt;:3100 을 열고 ADMIN_EMAIL + ADMIN_PASSWORD로 로그인합니다. 관리자 계정은 entrypoint가 자동 생성했습니다.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="dots"><i></i><i></i><i></i></span>
+        <span>06-1. 접속 URL</span>
+      </div>
+      <pre><code class="language-text"># Tailscale 메시에 연결된 디바이스에서 열기
+https://&lt;TS_HOSTNAME&gt;.ts.net:3100
+
+# 예시
+https://paperclip.tail1234ab.ts.net:3100</code></pre>
+    </div>
+
+
+    <aside class="note-block">
+      <div class="block-label">06-2. 관리자 계정 자동 생성 방식</div>
+      <p>v0.1의 bootstrap-ceo invite token 복사 흐름이 v1에서 사라졌습니다. <code>entrypoint.sh</code>가 부팅 시 <code>ADMIN_EMAIL</code> + <code>ADMIN_PASSWORD</code> env를 읽어 Paperclip에 관리자를 자동으로 가입시키고, 이후 <code>disableSignUp: true</code>로 잠급니다. 로그인 페이지에서 가입 버튼이 없으면 정상입니다.</p>
+    </aside>
+
+
+    <figure class="screenshot">
+      <img src="assets/placeholder.svg" alt="Paperclip 로그인 페이지 — ADMIN_EMAIL + ADMIN_PASSWORD 입력" loading="lazy">
+      <span class="placeholder-tag">PLACEHOLDER · 06-paperclip-login.png</span>
+      <figcaption>Paperclip 로그인 페이지 — ADMIN_EMAIL + ADMIN_PASSWORD 입력</figcaption>
+    </figure>
+
+
+    <figure class="screenshot">
+      <img src="assets/placeholder.svg" alt="로그인 후 Paperclip 워크스페이스 메인 화면" loading="lazy">
+      <span class="placeholder-tag">PLACEHOLDER · 06-paperclip-workspace.png</span>
+      <figcaption>로그인 후 Paperclip 워크스페이스 메인 화면</figcaption>
+    </figure>
+
+
+    <aside class="check-block">
+      <div class="block-label">06-3. 확인 기준</div>
+      <p>Paperclip 워크스페이스 메인 화면이 표시됩니다. 왼쪽 사이드바에 <strong>Agents</strong>, <strong>Tasks</strong>, <strong>Settings</strong> 메뉴가 보입니다.</p>
+    </aside>
+
+    </section>
+
+
+    <section class="step" id="step-07">
+      <div class="section-num">STEP 07</div>
+      <h2>Hermes Dashboard 확인</h2>
+      <p class="lede">새 탭에서 https://&lt;fqdn&gt;:9119 를 열어 Hermes Dashboard에 접속합니다.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="dots"><i></i><i></i><i></i></span>
+        <span>07-1. Hermes Dashboard URL</span>
+      </div>
+      <pre><code class="language-text">https://&lt;TS_HOSTNAME&gt;.ts.net:9119
+
+# 예시
+https://paperclip.tail1234ab.ts.net:9119</code></pre>
+    </div>
+
+
+    <figure class="screenshot">
+      <img src="assets/placeholder.svg" alt="Hermes Dashboard — Sessions / Skills / API Keys 탭" loading="lazy">
+      <span class="placeholder-tag">PLACEHOLDER · 07-hermes-dashboard.png</span>
+      <figcaption>Hermes Dashboard — Sessions / Skills / API Keys 탭</figcaption>
+    </figure>
+
+
+    <aside class="note-block">
+      <div class="block-label">07-2. Dashboard가 보여주는 것</div>
+      <p>Hermes Dashboard는 세션 목록, 설치된 스킬 패키지, API 키 설정, 실행 로그를 제공하는 관리 SPA입니다. Codex OAuth 완료 전에도 Dashboard 자체는 접근 가능합니다. ttyd 터미널은 <code>https://&lt;fqdn&gt;:4860</code>에서 열 수 있으며, 접속 시 <code>ADMIN_USERNAME</code> + <code>ADMIN_PASSWORD</code>로 인증합니다.</p>
+    </aside>
+
+
+    <aside class="check-block">
+      <div class="block-label">07-3. 확인 기준</div>
+      <p>Hermes Dashboard 메인 화면이 표시됩니다. 상단에 <strong>Sessions</strong> 탭이 보이며, 현재 활성 세션이 없는 상태가 정상입니다.</p>
+    </aside>
+
+    </section>
+
+
+    <section class="step" id="step-08">
+      <div class="section-num">STEP 08</div>
+      <h2>Codex OAuth 부트스트랩</h2>
+      <p class="lede">paperclip-hermes-codex 컨테이너 로그에서 Codex OAuth URL을 찾아 브라우저에서 인증합니다. 이 인증은 단 1회만 필요합니다.</p>
+
+    <aside class="note-block">
+      <div class="block-label">08-1. OAuth가 필요한 이유</div>
+      <p>Hermes는 태스크 실행 시 Codex CLI를 spawn합니다. Codex CLI가 OpenAI API를 호출하려면 OAuth 토큰 또는 API 키가 있어야 합니다. <code>codex-oauth.sh</code>는 부팅 시 <code>~/.codex/auth.json</code>을 확인하고, 없으면 <code>codex login --device-auth</code>를 백그라운드로 실행해 URL을 로그에 출력합니다. Paperclip과 Hermes는 OAuth 완료를 기다리지 않고 즉시 시작됩니다.</p>
+    </aside>
+
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="dots"><i></i><i></i><i></i></span>
+        <span>08-2. 컨테이너 로그에서 OAuth URL 찾기</span>
+      </div>
+      <pre><code class="language-text"># Docker Manager → paperclip-hermes-codex → Logs 버튼 클릭
+# 아래와 유사한 줄을 찾습니다:
+
+[codex-oauth] No auth.json found — starting device auth
+[codex-oauth] Open this URL to authenticate:
+[codex-oauth] https://auth.openai.com/device?user_code=XXXX-XXXX
+[codex-oauth] Code: XXXX-XXXX (expires in 15 minutes)</code></pre>
+    </div>
+
+
+    <figure class="screenshot">
+      <img src="assets/placeholder.svg" alt="컨테이너 로그 패널 — Codex OAuth URL + 코드 출력" loading="lazy">
+      <span class="placeholder-tag">PLACEHOLDER · 08-codex-oauth-log.png</span>
+      <figcaption>컨테이너 로그 패널 — Codex OAuth URL + 코드 출력</figcaption>
+    </figure>
+
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="dots"><i></i><i></i><i></i></span>
+        <span>08-3. 브라우저 인증 절차</span>
+      </div>
+      <pre><code class="language-bash"># 1. 로그에 표시된 URL을 새 탭에서 엽니다
+#    예: https://auth.openai.com/device?user_code=XXXX-XXXX
+
+# 2. ChatGPT 계정으로 로그인 후 &quot;Allow&quot; 클릭
+
+# 3. 콘솔 로그에서 완료 확인:
+[codex-oauth] Codex OAuth completed — auth.json saved to /home/node/.codex/auth.json</code></pre>
+    </div>
+
+
+    <figure class="screenshot">
+      <img src="assets/placeholder.svg" alt="ChatGPT 디바이스 인증 페이지 — Allow 클릭" loading="lazy">
+      <span class="placeholder-tag">PLACEHOLDER · 08-codex-browser-auth.png</span>
+      <figcaption>ChatGPT 디바이스 인증 페이지 — Allow 클릭</figcaption>
+    </figure>
+
+
+    <aside class="note-block">
+      <div class="block-label">08-4. OPENAI_API_KEY 대안</div>
+      <p>OAuth 대신 API 키를 사용하려면 환경변수 <code>OPENAI_API_KEY=sk-...</code>를 추가하고 재배포합니다. Codex CLI 0.122 이상은 이 값을 자동으로 <code>auth.json</code> 형식으로 변환합니다. OAuth와 API 키 중 하나만 있으면 충분하며 두 방식은 혼용 가능합니다.</p>
+    </aside>
+
+
+    <aside class="check-block">
+      <div class="block-label">08-5. 확인 기준</div>
+      <p>컨테이너 로그에 <strong>[codex-oauth] Codex OAuth completed</strong>가 출력됩니다. 이후 컨테이너 재시작이나 이미지 업데이트 시 재인증은 필요 없습니다 — 토큰이 <code>codex-auth</code> named volume에 영구 저장되었기 때문입니다.</p>
+    </aside>
+
+    </section>
+
+
+    <section class="step" id="step-09">
+      <div class="section-num">STEP 09</div>
+      <h2>첫 에이전트 생성 + Test now 통과</h2>
+      <p class="lede">Paperclip에서 Hermes Agent 어댑터를 사용하는 CEO 에이전트를 생성하고 Test now 버튼으로 어댑터 환경을 검증합니다.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="dots"><i></i><i></i><i></i></span>
+        <span>09-1. 에이전트 생성 절차</span>
+      </div>
+      <pre><code class="language-bash"># Paperclip UI (https://&lt;fqdn&gt;:3100)
+# 1. 왼쪽 사이드바 → Agents → + New Agent 클릭
+# 2. Name: CEO (또는 원하는 이름)
+# 3. Adapter: &quot;Hermes Agent&quot; 선택
+# 4. Hermes URL: http://localhost:9119  (컨테이너 내부 주소)
+# 5. Session Token: Hermes Dashboard → Settings에서 확인
+# 6. Save 클릭</code></pre>
+    </div>
+
+
+    <figure class="screenshot">
+      <img src="assets/placeholder.svg" alt="Paperclip — 에이전트 생성 폼, Hermes Agent 어댑터 선택" loading="lazy">
+      <span class="placeholder-tag">PLACEHOLDER · 09-create-agent.png</span>
+      <figcaption>Paperclip — 에이전트 생성 폼, Hermes Agent 어댑터 선택</figcaption>
+    </figure>
+
+
+    <aside class="note-block">
+      <div class="block-label">09-2. Hermes Agent 어댑터가 동작하는 이유</div>
+      <p>v1 단일 컨테이너는 <code>hermes</code> 바이너리를 <code>/usr/local/bin</code>에 포함합니다. Paperclip의 어댑터 환경 체크 (<em>Adapter env check</em>)는 같은 컨테이너 PATH에서 바이너리를 즉시 발견하므로 추가 설치 없이 바로 통과됩니다.</p>
+    </aside>
+
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="dots"><i></i><i></i><i></i></span>
+        <span>09-3. Test now 버튼 클릭 후 기대 결과</span>
+      </div>
+      <pre><code class="language-text"># 에이전트 상세 페이지 → &quot;Test now&quot; 버튼 클릭
+# 성공 시 표시:
+Adapter env check: passed</code></pre>
+    </div>
+
+
+    <figure class="screenshot">
+      <img src="assets/placeholder.svg" alt="Paperclip — Test now 결과: Adapter env check: passed" loading="lazy">
+      <span class="placeholder-tag">PLACEHOLDER · 09-test-now-passed.png</span>
+      <figcaption>Paperclip — Test now 결과: Adapter env check: passed</figcaption>
+    </figure>
+
+
+    <aside class="check-block">
+      <div class="block-label">09-4. 확인 기준</div>
+      <p>Test now 버튼 클릭 후 <strong>Adapter env check: passed</strong> 메시지가 표시됩니다. 오류가 나면 <code>paperclip-hermes-codex</code> 컨테이너 로그에서 <code>[supervisor] hermes dashboard</code> 줄을 확인해 Hermes Dashboard가 실행 중인지 검증합니다.</p>
+    </aside>
+
+    </section>
+
+
+    <section class="step" id="step-10">
+      <div class="section-num">STEP 10</div>
+      <h2>첫 Task 실행 — 체인 검증</h2>
+      <p class="lede">간단한 Task를 생성해 Paperclip → Hermes → Codex → OpenAI 전체 체인이 연결되었는지 확인합니다.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="dots"><i></i><i></i><i></i></span>
+        <span>10-1. Task 생성</span>
+      </div>
+      <pre><code class="language-bash"># Paperclip UI → Tasks → + New Task
+# Title: Hello Chain
+# Description: Respond with hello
+# Agent: CEO (방금 생성한 에이전트)
+# Run 클릭</code></pre>
+    </div>
+
+
+    <aside class="note-block">
+      <div class="block-label">10-2. 체인 흐름</div>
+      <p>Paperclip이 태스크를 Hermes Agent에 전달합니다 → Hermes는 <code>codex run</code>으로 Codex CLI를 spawn합니다 → Codex CLI는 <code>auth.json</code> 토큰으로 OpenAI API를 호출합니다 → 결과가 역순으로 전달되어 Paperclip Task 상세 페이지에 반환됩니다.</p>
+    </aside>
+
+
+    <figure class="screenshot">
+      <img src="assets/placeholder.svg" alt="Paperclip Task 상세 — 실행 결과 반환 확인" loading="lazy">
+      <span class="placeholder-tag">PLACEHOLDER · 10-task-result.png</span>
+      <figcaption>Paperclip Task 상세 — 실행 결과 반환 확인</figcaption>
+    </figure>
+
+
+    <aside class="check-block">
+      <div class="block-label">10-3. 확인 기준</div>
+      <p>Task 상세 페이지에 에이전트 응답이 표시됩니다. Status가 <strong>completed</strong>이면 전체 체인 검증이 완료된 것입니다. Status가 <strong>failed</strong>이면 STEP 08 Codex OAuth가 완료되었는지 다시 확인합니다.</p>
+    </aside>
+
+    </section>
+
+
+    <section class="step" id="step-11">
+      <div class="section-num">STEP 11</div>
+      <h2>업데이트 흐름</h2>
+      <p class="lede">Hostinger Docker Manager 콘솔의 Update 버튼 한 번으로 paperclip, hermes, codex 세 도구의 최신 버전이 반영됩니다.</p>
+
+    <aside class="note-block">
+      <div class="block-label">11-1. GHA nightly 빌드</div>
+      <p>GitHub Actions가 매일 KST 12:17에 upstream 이미지를 pull해 <code>ghcr.io/dandacompany/paperclip-hermes-codex:latest</code>를 재빌드합니다. Update 버튼은 이 최신 digest를 pull해 컨테이너를 재생성합니다.</p>
+    </aside>
+
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="dots"><i></i><i></i><i></i></span>
+        <span>11-2. 콘솔 업데이트 절차</span>
+      </div>
+      <pre><code class="language-bash"># Docker Manager → 서비스 선택 → Update 버튼 클릭
+# 내부 동작:
+#   docker compose pull          (최신 이미지 다운로드)
+#   docker compose up -d         (컨테이너 재생성)
+# 소요 시간: 이미지 크기에 따라 1~2분</code></pre>
+    </div>
+
+
+    <figure class="screenshot">
+      <img src="assets/placeholder.svg" alt="Docker Manager — Update 버튼 클릭" loading="lazy">
+      <span class="placeholder-tag">PLACEHOLDER · 11-update-button.png</span>
+      <figcaption>Docker Manager — Update 버튼 클릭</figcaption>
+    </figure>
+
+
+    <aside class="note-block">
+      <div class="block-label">11-3. 데이터 보존 원칙</div>
+      <p>named volume 4개 (<code>paperclip-data</code>, <code>hermes-data</code>, <code>codex-auth</code>, <code>tailscale-state</code>)는 <code>docker compose up -d</code>로 컨테이너가 재생성되어도 그대로 유지됩니다. Codex OAuth 토큰, Hermes 세션·스킬, Paperclip 워크스페이스 데이터, Tailscale 노드 ID가 모두 보존됩니다. 완전히 초기화하려면 Docker Manager → 볼륨 탭에서 4개 볼륨을 수동 삭제합니다.</p>
+    </aside>
+
+
+    <aside class="check-block">
+      <div class="block-label">11-4. 확인 기준</div>
+      <p>Update 완료 후 컨테이너 2개가 다시 running 상태입니다. Paperclip UI에서 기존 Agents와 Tasks가 그대로 보이면 데이터 보존이 정상입니다. Codex OAuth를 다시 하지 않아도 Task 실행이 정상 동작하면 업데이트가 완료된 것입니다.</p>
+    </aside>
+
+
+    <aside class="note-block">
+      <div class="block-label">11-5. 특정 버전으로 롤백</div>
+      <p>GHA 빌드는 <code>:latest</code> 외에 <code>:nightly-&lt;N&gt;</code>와 <code>:&lt;sha&gt;</code> 태그도 publish합니다. 문제가 생기면 Docker Manager 환경변수에서 이미지 태그를 <code>ghcr.io/dandacompany/paperclip-hermes-codex:nightly-42</code> 형식으로 지정하고 재배포합니다.</p>
+    </aside>
+
+    </section>
+
+  </main>
+  <footer>
+    <p>저장소 · <a href="https://github.com/dandacompany/paperclip-hermes-codex-on-hostinger">github.com/dandacompany/paperclip-hermes-codex-on-hostinger</a></p>
+    <p>v0.1 사이드카 구조 참조 · <code>git checkout v0.1-sidecar</code></p>
+    <p>마이그레이션 가이드 · <a href="../MIGRATION-v0.1-to-v1.md">docs/MIGRATION-v0.1-to-v1.md</a></p>
+    <p>아키텍처 스펙 · <a href="../superpowers/specs/2026-05-17-paperclip-hermes-codex-design.md">docs/superpowers/specs/2026-05-17-paperclip-hermes-codex-design.md</a></p>
+    <p>구현 플랜 · <a href="../superpowers/plans/2026-05-17-paperclip-hermes-codex-implementation.md">docs/superpowers/plans/2026-05-17-paperclip-hermes-codex-implementation.md</a></p>
+    <p>SSH CLI 기반 배포는 <code>docs/tutorial-ssh-cli/</code> 튜토리얼을 참고합니다.</p>
+  </footer>
+</body>
+</html>
