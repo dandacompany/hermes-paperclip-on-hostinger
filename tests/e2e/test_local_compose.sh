@@ -1,12 +1,12 @@
 #!/bin/bash
 # Local-mode E2E smoke for paperclip-hermes-codex.
-# Brings up the container with docker-compose.v1.yml + docker-compose.local.v1.yml,
+# Brings up the container with docker-compose.yml + docker-compose.local.yml,
 # verifies paperclip/health, hermes dashboard, ttyd basic-auth, and that
 # Codex auth detection ran (no actual OAuth — just the log line).
 set -eu
 
 PROJECT="paperclip-hermes-codex-e2e"
-export COMPOSE_FILE="docker-compose.v1.yml:docker-compose.local.v1.yml"
+export COMPOSE_FILE="docker-compose.yml:docker-compose.local.yml"
 export ADMIN_USERNAME="${ADMIN_USERNAME:-e2euser}"
 export ADMIN_NAME="${ADMIN_NAME:-E2E}"
 export ADMIN_EMAIL="${ADMIN_EMAIL:-e2e@example.com}"

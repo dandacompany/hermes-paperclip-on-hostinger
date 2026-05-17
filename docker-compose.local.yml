@@ -1,20 +1,6 @@
-# Local mode override — bind container ports to host 127.0.0.1 only.
-# This keeps the dashboard's `--insecure` flag harmless: the dashboard
-# binds 0.0.0.0 inside the container, but Docker maps it to host
-# loopback so the network never sees it. Other devices on your LAN
-# cannot reach the stack.
-#
-# Use this for: laptop self-host, single-user dev, no domain.
-
 services:
-  hermes-tui:
-    ports:
-      - "127.0.0.1:4860:4860"
-
-  hermes-dashboard:
-    ports:
-      - "127.0.0.1:9119:9119"
-
-  paperclip:
+  paperclip-hermes-codex:
     ports:
       - "127.0.0.1:3100:3100"
+      - "127.0.0.1:9119:9119"
+      - "127.0.0.1:4860:4860"
