@@ -35,6 +35,18 @@ RUN chmod +x /entrypoint.sh /usr/local/bin/supervisor.sh /usr/local/bin/codex-oa
 RUN mkdir -p /paperclip /home/node/.hermes /home/node/.codex \
  && chown -R node:node /home/node/.hermes /home/node/.codex /paperclip
 
+
+# Patch hermes-paperclip-adapter to use Hermes's own configured default
+# when agent's adapterConfig.model is empty, instead of falling back to
+# anthropic/claude-sonnet-4. Mirrors upstream PR #123 (OPEN):
+#   https://github.com/NousResearch/hermes-paperclip-adapter/pull/123
+# Once upstream merges and a new base image picks it up, this sed
+# becomes a no-op (idempotent).
+RUN ADAPTER_JS=/usr/local/lib/node_modules/paperclipai/node_modules/hermes-paperclip-adapter/dist/server/execute.js \
+ && sed -i 's#cfgString(config\.model) || DEFAULT_MODEL#cfgString(config.model)#g' "$ADAPTER_JS" \
+ && REMAIN=$(grep -c 'cfgString(config.model) || DEFAULT_MODEL' "$ADAPTER_JS" 2>/dev/null || echo 0) \
+ && echo "remaining DEFAULT_MODEL fallbacks: $REMAIN"
+
 ENV HOME=/home/node
 ENV HERMES_HOME=/home/node/.hermes
 USER node
