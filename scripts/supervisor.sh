@@ -24,6 +24,6 @@ spawn_bg() {
 }
 
 spawn_bg "hermes-dashboard" hermes dashboard --port 9119 --host 0.0.0.0 --insecure --no-open --skip-build
-spawn_bg "hermes-ttyd"      ttyd -p 4860 -c "$HERMES_CREDS" hermes shell
+spawn_bg "hermes-ttyd"      ttyd -p 4860 -c "$HERMES_CREDS" -W -t titleFixed="Hermes Agent" -t disableResizeOverlay=true /usr/local/bin/hermes-tty.sh
 
 exec paperclipai run

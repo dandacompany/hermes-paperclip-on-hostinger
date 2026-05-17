@@ -18,11 +18,12 @@ COPY --from=hermes /usr/bin/ttyd /usr/local/bin/ttyd
 # hermes CLI를 PATH에 노출
 ENV PATH=/opt/hermes/.venv/bin:$PATH
 
-# Custom entrypoint + supervisor + codex auth
+# Custom entrypoint + supervisor + codex auth + hermes ttyd wrapper
 COPY scripts/entrypoint.sh   /entrypoint.sh
 COPY scripts/supervisor.sh   /usr/local/bin/supervisor.sh
 COPY scripts/codex-oauth.sh  /usr/local/bin/codex-oauth.sh
-RUN chmod +x /entrypoint.sh /usr/local/bin/supervisor.sh /usr/local/bin/codex-oauth.sh
+COPY scripts/hermes-tty.sh   /usr/local/bin/hermes-tty.sh
+RUN chmod +x /entrypoint.sh /usr/local/bin/supervisor.sh /usr/local/bin/codex-oauth.sh /usr/local/bin/hermes-tty.sh
 
 # 영구 데이터 디렉터리 (named volume mount target)
 RUN mkdir -p /paperclip /home/node/.hermes /home/node/.codex \

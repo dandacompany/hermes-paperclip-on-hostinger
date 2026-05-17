@@ -45,3 +45,8 @@ teardown_file() { docker rmi -f "$IMAGE" 2>/dev/null || true; }
   [[ "$output" == *"9119"* ]]
   [[ "$output" == *"4860"* ]]
 }
+
+@test "image: hermes-tty.sh wrapper 실행권 있음" {
+  run docker run --rm --entrypoint sh "$IMAGE" -c "test -x /usr/local/bin/hermes-tty.sh"
+  [ "$status" -eq 0 ]
+}

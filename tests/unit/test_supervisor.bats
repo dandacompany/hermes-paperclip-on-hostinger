@@ -23,6 +23,8 @@ teardown() { teardown_tmp_home; }
   [[ "$output" == *"--insecure"* ]]
   [[ "$output" == *"--no-open"* ]]
   [[ "$output" == *"--skip-build"* ]]
+  [[ "$output" == *"-W"* ]]
+  [[ "$output" == *"hermes-tty.sh"* ]]
 }
 
 @test "supervisor: .ttyd-creds 누락 시 명시적 에러" {
