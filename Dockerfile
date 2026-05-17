@@ -9,8 +9,9 @@ FROM ghcr.io/hostinger/hvps-paperclip:latest
 USER root
 
 # tini for proper PID 1 signal handling + zombie reaping (not present in base image)
+# python3 (3.13) is required by /opt/hermes/.venv/bin/python which symlinks to /usr/bin/python3
 RUN apt-get update \
- && apt-get install -y --no-install-recommends tini \
+ && apt-get install -y --no-install-recommends tini python3 \
  && rm -rf /var/lib/apt/lists/*
 
 # Hermes 전체 설치본 복사 (venv 포함 — Python 바이너리는 경로 절대 의존)
