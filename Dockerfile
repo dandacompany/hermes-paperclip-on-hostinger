@@ -8,6 +8,11 @@ FROM ghcr.io/hostinger/hvps-paperclip:latest
 
 USER root
 
+# tini for proper PID 1 signal handling + zombie reaping (not present in base image)
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends tini \
+ && rm -rf /var/lib/apt/lists/*
+
 # Hermes 전체 설치본 복사 (venv 포함 — Python 바이너리는 경로 절대 의존)
 # NOTE: Full Python venv required — minimum 750MB without optimization. Tracked for v1.1 slim-down.
 # Use --chown to set ownership at copy time (recursive chown on millions of venv files would OOM).

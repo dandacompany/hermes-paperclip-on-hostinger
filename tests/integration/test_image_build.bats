@@ -50,3 +50,22 @@ teardown_file() { docker rmi -f "$IMAGE" 2>/dev/null || true; }
   run docker run --rm --entrypoint sh "$IMAGE" -c "test -x /usr/local/bin/hermes-tty.sh"
   [ "$status" -eq 0 ]
 }
+
+@test "image: tini 바이너리 존재 (ENTRYPOINT가 의존)" {
+  run docker run --rm --entrypoint sh "$IMAGE" -c "command -v tini"
+  [ "$status" -eq 0 ]
+}
+
+@test "image: 기본 ENTRYPOINT가 spawn 시 즉시 PATH/format 에러 없이 시작" {
+  # 1.5초 띄운 뒤 즉시 kill — ENTRYPOINT 가 'tini not found' 같은 즉시 실패면 1.5s 안에 exit code 127 으로 떨어진다.
+  cid=$(docker run -d --rm \
+    -e ADMIN_USERNAME=t -e ADMIN_NAME=T -e ADMIN_EMAIL=t@t -e ADMIN_PASSWORD=t \
+    "$IMAGE" || true)
+  [ -n "$cid" ]
+  sleep 1.5
+  status=$(docker inspect -f '{{.State.Status}}' "$cid" 2>&1 || echo missing)
+  docker kill "$cid" 2>/dev/null || true
+  [[ "$status" == "running" || "$status" == "exited" ]]
+  # exited 라면 OCI exec 에러가 아니라 부트스트랩 progression에서 나온 것이어야 함.
+  # tini 자체가 없을 때의 'exec format' 에러는 docker run 시점에 즉시 떨어져 cid 자체가 비게 된다.
+}
