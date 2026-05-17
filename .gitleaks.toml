@@ -41,6 +41,12 @@ description = "Paperclip first-boot admin invite token (pcp_bootstrap_*)"
 regex = '''pcp_bootstrap_[a-f0-9]{32,}'''
 tags = ["paperclip", "secret"]
 
+[[rules]]
+id = "codex-oauth-token"
+description = "Codex CLI OAuth token (auth.json 'access_token' field)"
+regex = '''"access_token"\s*:\s*"[A-Za-z0-9_-]{40,}"'''
+tags = ["codex", "oauth", "secret"]
+
 # ── Allow-list ────────────────────────────────────────────────
 
 [allowlist]
