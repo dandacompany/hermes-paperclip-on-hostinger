@@ -9,7 +9,9 @@ FROM ghcr.io/hostinger/hvps-paperclip:latest
 USER root
 
 # Hermes 전체 설치본 복사 (venv 포함 — Python 바이너리는 경로 절대 의존)
-COPY --from=hermes /opt/hermes /opt/hermes
+# NOTE: Full Python venv required — minimum 750MB without optimization. Tracked for v1.1 slim-down.
+# Use --chown to set ownership at copy time (recursive chown on millions of venv files would OOM).
+COPY --from=hermes --chown=node:node /opt/hermes /opt/hermes
 # ttyd 바이너리 복사
 COPY --from=hermes /usr/bin/ttyd /usr/local/bin/ttyd
 

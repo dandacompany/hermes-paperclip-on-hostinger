@@ -4,7 +4,6 @@ set -eu
 export HERMES_HOME="${HERMES_HOME:-/home/node/.hermes}"
 export CODEX_HOME="${CODEX_HOME:-/home/node/.codex}"
 export PAPERCLIP_HOME="${PAPERCLIP_HOME:-/paperclip}"
-ETC_HERMES="${ETC_HERMES:-/etc/hermes}"
 PORT="${PORT:-3100}"
 TEST_MODE="${TEST_MODE:-}"
 MACHINE_ID="${TEST_MACHINE_ID:-$(cat /etc/machine-id 2>/dev/null || echo default-machine)}"
@@ -68,15 +67,14 @@ _paperclip_admin_signup() {
 bootstrap_hermes() {
   [ -f "$HERMES_HOME/config.yaml" ] && return 0
   echo "→ Hermes first-run bootstrap"
-  cp -r "$ETC_HERMES/template/." "$HERMES_HOME/"
-  if [ -z "$TEST_MODE" ]; then
-    yq -i '.providers.default = "codex_local"' "$HERMES_HOME/config.yaml"
-  else
-    echo "providers: { default: codex_local }" >> "$HERMES_HOME/config.yaml"
-  fi
+  mkdir -p "$HERMES_HOME"
   local token
   token=$(printf '%s' "$ADMIN_USERNAME:$ADMIN_PASSWORD:$MACHINE_ID" | sha256sum | cut -d' ' -f1)
-  echo "session_token: $token" >> "$HERMES_HOME/config.yaml"
+  cat > "$HERMES_HOME/config.yaml" <<EOF
+providers:
+  default: codex_local
+session_token: $token
+EOF
   echo "$ADMIN_USERNAME:$ADMIN_PASSWORD" > "$HERMES_HOME/.ttyd-creds"
   chmod 600 "$HERMES_HOME/.ttyd-creds"
 }
