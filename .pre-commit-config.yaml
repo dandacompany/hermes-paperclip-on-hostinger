@@ -24,8 +24,12 @@ repos:
         args: ["--maxkb=1024"]
       - id: detect-private-key
 
-  - repo: https://github.com/koalaman/shellcheck-precommit
-    rev: v0.10.0
+  - repo: local
     hooks:
       - id: shellcheck
+        name: shellcheck (native, no Docker)
+        # Requires: brew install shellcheck  /  apt-get install -y shellcheck
+        entry: shellcheck
+        language: system
+        types: [shell]
         args: ["--severity=warning"]
