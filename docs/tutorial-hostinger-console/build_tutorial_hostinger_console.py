@@ -478,13 +478,19 @@ openssl rand -base64 32 | tr -d '/+=' | head -c 32 ; echo
                 "Paperclip Logs 에 새로 찍히는 <code>auth: instance admin registered</code> 같은 줄로도 가입 완료를 확인할 수 있습니다.",
             ),
             note_block(
-                "07-6. invite 가 만료 · 사용됨 · 차단됐다면 — rotate 명령",
+                "07-6. invite 만료 · 사용 · 차단 시 — 콘솔 터미널로 rotate",
                 "<strong>Invite not available — This invite may be expired, revoked, or already used.</strong> "
-                "안내가 보이면 컨테이너 안에서 새 invite 를 발급합니다. "
-                "Docker Manager 의 <code>paperclip</code> 컨테이너 카드 <strong>터미널</strong> 또는 SSH 로: "
-                "<code>docker exec hermes-paperclip-on-hostinger-paperclip-1 paperclipai auth bootstrap-ceo</code>. "
-                "출력의 <code>Invite URL</code> 한 줄에 새 토큰 + 메시 도메인이 그대로 나옵니다 (07-2b 의 PAPERCLIP_PUBLIC_URL 덕분). "
-                "새 URL 을 브라우저로 열면 Set up Paperclip 페이지가 정상 열림.",
+                "안내가 보이면 콘솔 터미널만으로 새 invite 를 발급합니다 (SSH 불필요). "
+                "Docker Manager 의 <code>paperclip</code> 컨테이너 카드 → <strong>터미널</strong> 링크 클릭 → 열린 콘솔 창에서: "
+                "<code>paperclipai auth bootstrap-ceo</code> "
+                "한 줄 실행. 출력의 <code>Invite URL: https://&lt;Full-domain&gt;:3100/invite/pcp_bootstrap_…</code> 를 그대로 복사해 브라우저에 붙여넣기. "
+                "07-2b 에서 PAPERCLIP_PUBLIC_URL 을 메시 도메인으로 갱신해 두었기 때문에 invite URL 이 처음부터 메시 도메인으로 발급됩니다.",
+            ),
+            note_block(
+                "07-6b. 첫 부팅 invite 만 필요하다면 — Logs 뷰",
+                "처음 부팅 직후의 invite URL 만 다시 보고 싶다면 같은 컨테이너 카드의 <strong>Logs</strong> 를 열어 "
+                "검색(Cmd+F / Ctrl+F) 으로 <code>Invite URL</code> 을 찾습니다. "
+                "단, CLI 로 rotate 한 invite 는 명령 output 으로만 표시되어 Logs 에 안 찍히므로, rotate 시나리오에는 위 터미널 흐름을 쓰세요.",
             ),
             figure_block("12-paperclip-workspace.png", "Paperclip admin sign-up 완료 후 워크스페이스 메인 또는 sign-in 페이지."),
             note_block(
