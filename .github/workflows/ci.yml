@@ -69,7 +69,55 @@ jobs:
             docker-compose.traefik.yml \
             docker-compose.cloudflared.yml \
             docker-compose.console.yml \
+            docker-compose.v1.yml \
+            docker-compose.local.v1.yml \
+            docker-compose.tailscale.v1.yml \
+            docker-compose.console.v1.yml \
             .github/workflows/ci.yml || true
+
+  compose-config-v1-base-local:
+    name: compose config (v1 base+local)
+    runs-on: ubuntu-latest
+    env:
+      ADMIN_USERNAME: x
+      ADMIN_EMAIL: x@x
+      ADMIN_PASSWORD: x
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker compose -f docker-compose.v1.yml -f docker-compose.local.v1.yml config > /dev/null
+
+  compose-config-v1-tailscale:
+    name: compose config (v1 base+tailscale)
+    runs-on: ubuntu-latest
+    env:
+      ADMIN_USERNAME: x
+      ADMIN_EMAIL: x@x
+      ADMIN_PASSWORD: x
+      TS_AUTHKEY: tskey-fake
+      TS_HOSTNAME: p
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker compose -f docker-compose.v1.yml -f docker-compose.tailscale.v1.yml config > /dev/null
+
+  compose-config-v1-console:
+    name: compose config (v1 console)
+    runs-on: ubuntu-latest
+    env:
+      ADMIN_USERNAME: x
+      ADMIN_EMAIL: x@x
+      ADMIN_PASSWORD: x
+      TS_AUTHKEY: tskey-fake
+      TS_HOSTNAME: p
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker compose -f docker-compose.console.v1.yml config > /dev/null
+
+  serve-json-validate:
+    name: tailscale serve.json valid
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: jq . tailscale/serve.json > /dev/null
 
   gitleaks:
     name: gitleaks (secret scan)
