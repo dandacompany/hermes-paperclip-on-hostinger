@@ -442,7 +442,7 @@ openssl rand -base64 32 | tr -d '/+=' | head -c 32 ; echo
                 [
                     ("Hermes Dashboard", "https://<Full-domain>:9119", "별도 로그인 없음 (Hermes 자체 세션 토큰)"),
                     ("Hermes TUI", "https://<Full-domain>:4860", "Basic Auth: hermes / ADMIN_PASSWORD"),
-                    ("Paperclip", "https://<Full-domain>:3100", "Sign-in: ADMIN_EMAIL / ADMIN_PASSWORD"),
+                    ("Paperclip", "https://<Full-domain>:3100", "첫 접속은 invite URL 로 admin 등록 (07-5 참고), 이후 sign-in"),
                 ],
                 ("인터페이스", "메시 URL", "첫 진입 인증"),
             ),
@@ -455,13 +455,25 @@ openssl rand -base64 32 | tr -d '/+=' | head -c 32 ; echo
             ),
             figure_block("10-hermes-dashboard.png", "Hermes Dashboard 메인 — 왼쪽 사이드바의 풀 메뉴, 가운데 Sessions 탭 (NO SESSIONS YET 안내), 하단 System 패널 (Gateway Status · Active Sessions)."),
             note_block(
-                "07-5. Paperclip 첫 접속",
-                "<code>:3100</code> 으로 들어가 sign-in 폼에 5단계에서 입력한 <code>ADMIN_EMAIL</code> 과 <code>ADMIN_PASSWORD</code> 를 입력합니다. "
-                "첫 로그인 시 admin 계정이 자동 생성되며 작업·라우틴 워크플로 콘솔이 열립니다.",
+                "07-5. Paperclip 첫 접속 — Bootstrap invite 흐름",
+                "<code>:3100</code> 첫 진입 시 sign-in 폼 대신 <strong>Instance setup required — A bootstrap invite is already active</strong> 안내가 보일 수 있습니다. "
+                "Paperclip 은 첫 부팅 때 발급된 <strong>일회용 invite URL 로만 admin 을 등록</strong>합니다 (env 의 ADMIN_PASSWORD 만으로는 자동 가입되지 않음). "
+                "<code>paperclip</code> 컨테이너의 Logs 를 열어 <code>Invite URL: http://localhost:3100/invite/pcp_bootstrap_…</code> 줄을 찾고, "
+                "<code>localhost:3100</code> 부분을 메시 Full domain 으로 바꿔 접속합니다 "
+                "(예: <code>https://&lt;Full-domain&gt;:3100/invite/pcp_bootstrap_…</code>). "
+                "그 페이지의 폼에 email · password 를 입력하면 admin 계정이 생성되고, 이후 일반 sign-in 페이지로 들어갈 수 있습니다.",
             ),
-            figure_block("11-paperclip-login.png", "Paperclip sign-in 화면 또는 첫 로그인 후 워크스페이스 메인."),
             note_block(
-                "07-6. PAPERCLIP_PUBLIC_URL 갱신 (선택)",
+                "07-6. invite 가 만료됐다면 — rotate 명령",
+                "invite 만료(기본 3일) 또는 분실 시 컨테이너 안에서 새 invite 를 발급합니다. "
+                "Docker Manager 의 <code>paperclip</code> 컨테이너 카드 <strong>터미널</strong>(또는 SSH 로 <code>docker exec -it hermes-paperclip-on-hostinger-paperclip-1 sh</code>)에서: "
+                "<code>node /paperclipai/dist/cli.js auth bootstrap-ceo</code> "
+                "(Paperclip 버전에 따라 <code>pnpm paperclipai auth bootstrap-ceo</code> 이 동작하기도 함). "
+                "출력의 새 invite URL 을 위와 같이 메시 Full domain 으로 바꿔 사용.",
+            ),
+            figure_block("11-paperclip-login.png", "Paperclip admin sign-up 완료 후 워크스페이스 메인 또는 sign-in 페이지."),
+            note_block(
+                "07-7. PAPERCLIP_PUBLIC_URL 갱신 (선택)",
                 "Paperclip 컨테이너 env 의 <code>PAPERCLIP_PUBLIC_URL</code> 을 "
                 "<code>https://&lt;Full-domain&gt;:3100</code> 으로 바꾸고 paperclip 컨테이너 Restart. "
                 "이메일 magic link · OAuth callback URL 이 메시 도메인으로 맞춰져 외부 자동화가 깔끔해집니다.",
