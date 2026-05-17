@@ -433,6 +433,14 @@ openssl rand -base64 32 | tr -d '/+=' | head -c 32 ; echo
             ),
             figure_block("09-tailscale-detail.png", "hermes-paperclip 상세 페이지의 Machine Details — 빨간 박스의 Full domain 값(hermes-paperclip.tail7b1307.ts.net)이 이후 단계에서 쓰는 메시 호스트명."),
             note_block(
+                "07-2b. PAPERCLIP_PUBLIC_URL 을 Full domain 으로 즉시 갱신",
+                "Paperclip 의 better-auth 는 <code>PAPERCLIP_PUBLIC_URL</code> 한 값에서 trusted origin 6 종을 derive 합니다. "
+                "이 값이 <code>http://localhost:3100</code> 인 상태로 메시 도메인에서 접근하면 sign-up 페이지가 <strong>Invalid origin / 403</strong> 으로 거부합니다. "
+                "Docker Manager → 환경 탭에서 <code>PAPERCLIP_PUBLIC_URL</code> 을 "
+                "<code>https://&lt;Full-domain&gt;:3100</code> (예: <code>https://hermes-paperclip.tail7b1307.ts.net:3100</code>) 으로 저장하고 "
+                "<code>paperclip</code> 컨테이너만 Restart. 이후 invite URL 접근이 통과됩니다.",
+            ),
+            note_block(
                 "07-3. 디바이스 측 Tailscale 준비",
                 "접속하려는 노트북·폰에 Tailscale 클라이언트가 설치되어 있고 같은 tailnet 에 가입되어 있어야 합니다. "
                 "다른 tailnet 이면 같은 IP·도메인이라도 안 보입니다. "
@@ -479,10 +487,13 @@ openssl rand -base64 32 | tr -d '/+=' | head -c 32 ; echo
             ),
             figure_block("12-paperclip-workspace.png", "Paperclip admin sign-up 완료 후 워크스페이스 메인 또는 sign-in 페이지."),
             note_block(
-                "07-7. PAPERCLIP_PUBLIC_URL 갱신 (선택)",
-                "Paperclip 컨테이너 env 의 <code>PAPERCLIP_PUBLIC_URL</code> 을 "
-                "<code>https://&lt;Full-domain&gt;:3100</code> 으로 바꾸고 paperclip 컨테이너 Restart. "
-                "이메일 magic link · OAuth callback URL 이 메시 도메인으로 맞춰져 외부 자동화가 깔끔해집니다.",
+                "07-7. PAPERCLIP_PUBLIC_URL 의 역할 정리",
+                "07-2b 에서 갱신한 <code>PAPERCLIP_PUBLIC_URL</code> 한 값이 다음 네 군데를 동시에 결정합니다. "
+                "(1) better-auth trusted origin 목록 (메시 도메인 접근 허용), "
+                "(2) 이메일 magic link / 초대장 URL, "
+                "(3) OAuth callback URL, "
+                "(4) Paperclip UI 가 절대 URL 을 생성할 때 prefix. "
+                "단일 source of truth — 도메인 변경 시 이 한 줄만 바꾸면 됩니다.",
             ),
         ],
     },
@@ -525,8 +536,9 @@ openssl rand -base64 32 | tr -d '/+=' | head -c 32 ; echo
             ),
             note_block(
                 "08-4. 문제가 생기면",
-                "Paperclip 이 부팅 직후 죽으면 <code>PAPERCLIP_PUBLIC_URL</code> 값이 잘못된 URL 형식이라는 뜻입니다 (better-auth 가 거부). "
-                "7-6 처럼 메시 FQDN 으로 갱신하거나 <code>http://localhost:3100</code> 으로 임시 복구합니다. "
+                "Paperclip sign-up 페이지에서 <strong>Invalid origin / 403</strong> 이 보이면 <code>PAPERCLIP_PUBLIC_URL</code> 이 접근 도메인과 다른 상태입니다 (07-2b 참고). "
+                "Paperclip 이 부팅 직후 죽으면 <code>PAPERCLIP_PUBLIC_URL</code> 값이 잘못된 URL 형식이라는 뜻입니다 (better-auth 가 invalid base URL 거부). "
+                "메시 Full domain 으로 갱신하거나 <code>http://localhost:3100</code> 으로 임시 복구. "
                 "그 외 항목은 저장소의 <code>docs/EXPOSURE-tailscale.md</code> 트러블슈팅 절을 따릅니다.",
             ),
         ],
