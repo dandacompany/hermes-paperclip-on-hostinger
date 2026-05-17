@@ -35,6 +35,8 @@ RUN chmod +x /entrypoint.sh /usr/local/bin/supervisor.sh /usr/local/bin/codex-oa
 RUN mkdir -p /paperclip /home/node/.hermes /home/node/.codex \
  && chown -R node:node /home/node/.hermes /home/node/.codex /paperclip
 
+ENV HOME=/home/node
+ENV HERMES_HOME=/home/node/.hermes
 USER node
 EXPOSE 3100 9119 4860
 ENTRYPOINT ["tini","-g","--","/entrypoint.sh"]
