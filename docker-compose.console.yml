@@ -1,143 +1,65 @@
-# Self-contained compose for the Hostinger Docker Manager console
-# "Import compose from URL" path. No external file mounts — the
-# Tailscale sidecar fetches its serve.json from this repository's
-# GitHub Raw at boot.
+# Self-contained compose file for Hostinger Console URL-import deployment.
+# Fetches tailscale/serve.json at boot from GitHub Raw (dandacompany/paperclip-hermes-codex-on-hostinger).
 #
-# Hostinger 콘솔에서 사용하는 방법:
-#   Docker Manager → Create new project → 컴포즈 → "URL에서 컴포즈 가져오기"
-#   URL: https://raw.githubusercontent.com/dandacompany/hermes-paperclip-on-hostinger/main/docker-compose.console.yml
+# Usage (Hostinger Console — URL import):
+#   https://raw.githubusercontent.com/dandacompany/paperclip-hermes-codex-on-hostinger/main/docker-compose.console.yml
 #
-# 그 다음 화면에서 6개 환경변수를 입력하세요:
-#   ADMIN_USERNAME  ADMIN_NAME  ADMIN_EMAIL  ADMIN_PASSWORD  TS_AUTHKEY  TS_HOSTNAME
-# 자세한 내용은 docs/tutorial-hostinger-console/ 튜토리얼 참고.
-
-name: hermes-paperclip
+# Required env vars: ADMIN_USERNAME, ADMIN_EMAIL, ADMIN_PASSWORD, TS_AUTHKEY
+# Optional env vars: ADMIN_NAME, PAPERCLIP_PUBLIC_URL, TS_HOSTNAME, OPENAI_API_KEY
 
 services:
-  hermes-init:
-    image: ghcr.io/hostinger/hvps-hermes-agent:latest
-    platform: linux/amd64
-    user: "0:0"
-    entrypoint: ["sh", "-c"]
-    command:
-      - |
-        set -e
-        mkdir -p /opt/data
-        chown -R 10000:10000 /opt/data
-        echo "hermes-init: ready"
-    volumes:
-      - hermes-data:/opt/data
-    restart: "no"
-
-  paperclip-init:
-    image: ghcr.io/hostinger/hvps-paperclip:latest
-    platform: linux/amd64
-    user: "0:0"
-    entrypoint: ["sh", "-c"]
-    command:
-      - |
-        set -e
-        mkdir -p /paperclip
-        chown -R 1000:1000 /paperclip
-        echo "paperclip-init: ready"
-    volumes:
-      - paperclip-data:/paperclip
-    restart: "no"
-
-  hermes-tui:
-    image: ghcr.io/hostinger/hvps-hermes-agent:latest
+  paperclip-hermes-codex:
+    image: ghcr.io/dandacompany/paperclip-hermes-codex:latest
     platform: linux/amd64
     restart: unless-stopped
+    network_mode: "service:tailscale"
     depends_on:
-      hermes-init:
-        condition: service_completed_successfully
+      tailscale: {condition: service_healthy}
     environment:
       ADMIN_USERNAME: ${ADMIN_USERNAME}
+      ADMIN_NAME:     ${ADMIN_NAME:-Owner}
+      ADMIN_EMAIL:    ${ADMIN_EMAIL}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
-    entrypoint: ["/bin/sh", "-c"]
-    command:
-      - |
-        exec gosu hermes ttyd \
-          --port 4860 \
-          -c "$$ADMIN_USERNAME:$$ADMIN_PASSWORD" \
-          -W \
-          -t titleFixed="Hermes Agent" \
-          -t disableResizeOverlay=true \
-          /hermes.sh
-    volumes:
-      - hermes-data:/opt/data
-
-  hermes-dashboard:
-    image: ghcr.io/hostinger/hvps-hermes-agent:latest
-    platform: linux/amd64
-    restart: unless-stopped
-    depends_on:
-      hermes-init:
-        condition: service_completed_successfully
-    user: "10000:10000"
-    entrypoint: ["/opt/hermes/.venv/bin/hermes"]
-    command:
-      - "dashboard"
-      - "--host"
-      - "0.0.0.0"
-      - "--port"
-      - "9119"
-      - "--no-open"
-      - "--skip-build"
-      - "--insecure"
-    environment:
-      HERMES_HOME: /opt/data
-    volumes:
-      - hermes-data:/opt/data
-
-  paperclip:
-    image: ghcr.io/hostinger/hvps-paperclip:latest
-    platform: linux/amd64
-    restart: unless-stopped
-    depends_on:
-      paperclip-init:
-        condition: service_completed_successfully
-    environment:
-      ADMIN_NAME: ${ADMIN_NAME:-Owner}
-      ADMIN_EMAIL: ${ADMIN_EMAIL}
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
-      PAPERCLIP_PUBLIC_URL: ${PAPERCLIP_PUBLIC_URL:-http://localhost:3100}
-      PAPERCLIP_INSTANCE_ID: default
+      PAPERCLIP_PUBLIC_URL:          ${PAPERCLIP_PUBLIC_URL:-https://${TS_HOSTNAME}.ts.net:3100}
+      PAPERCLIP_INSTANCE_ID:         default
+      PAPERCLIP_DEPLOYMENT_MODE:     authenticated
+      PAPERCLIP_AUTH_BASE_URL_MODE:  explicit
+      PAPERCLIP_BIND: lan
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
     volumes:
       - paperclip-data:/paperclip
+      - hermes-data:/home/node/.hermes
+      - codex-auth:/home/node/.codex
 
   tailscale:
     image: tailscale/tailscale:latest
-    hostname: ${TS_HOSTNAME:-hermes-paperclip}
+    hostname: ${TS_HOSTNAME:-paperclip}
     restart: unless-stopped
     environment:
-      TS_AUTHKEY: ${TS_AUTHKEY}
-      TS_STATE_DIR: /var/lib/tailscale
-      TS_USERSPACE: "false"
-      TS_EXTRA_ARGS: "--ssh --accept-routes"
+      TS_AUTHKEY:      ${TS_AUTHKEY}
+      TS_HOSTNAME:     ${TS_HOSTNAME:-paperclip}
+      TS_STATE_DIR:    /var/lib/tailscale
       TS_SERVE_CONFIG: /config/serve.json
-    entrypoint: ["sh", "-c"]
-    command:
-      - |
-        mkdir -p /config
-        wget -qO /config/serve.json \
-          https://raw.githubusercontent.com/dandacompany/hermes-paperclip-on-hostinger/main/tailscale/serve.json
-        exec /usr/local/bin/containerboot
     volumes:
       - tailscale-state:/var/lib/tailscale
-      - /dev/net/tun:/dev/net/tun
-    cap_add:
-      - NET_ADMIN
-      - NET_RAW
-    depends_on:
-      hermes-dashboard:
-        condition: service_started
-      hermes-tui:
-        condition: service_started
-      paperclip:
-        condition: service_started
+    cap_add: [NET_ADMIN, SYS_MODULE]
+    entrypoint: |
+      sh -c "set -e;
+             mkdir -p /config;
+             wget -q -O /config/serve.json https://raw.githubusercontent.com/dandacompany/paperclip-hermes-codex-on-hostinger/main/tailscale/serve.json;
+             tailscaled --tun=userspace-networking --state=/var/lib/tailscale/tailscaled.state &
+             sleep 3;
+             tailscale up --authkey=$$TS_AUTHKEY --hostname=$$TS_HOSTNAME;
+             tailscale serve --reset || true;
+             tailscale serve --bg --set-path /config/serve.json;
+             tail -f /dev/null"
+    healthcheck:
+      test: ["CMD", "tailscale", "status", "--peers=false", "--json"]
+      interval: 10s
+      retries: 12
 
 volumes:
-  hermes-data:
-  paperclip-data:
-  tailscale-state:
+  paperclip-data:  {}
+  hermes-data:     {}
+  codex-auth:      {}
+  tailscale-state: {}

@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700" preserveAspectRatio="xMidYMid meet">
-  <rect width="1200" height="700" fill="#ebe5d8"/>
-  <rect x="60" y="60" width="1080" height="580" rx="24" fill="#faf7f0" stroke="#c8c4bc" stroke-width="2" stroke-dasharray="8 8"/>
-  <text x="600" y="350" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="22" fill="#777">SCREENSHOT PLACEHOLDER</text>
-  <text x="600" y="385" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="14" fill="#a89876">to be captured from hpanel.hostinger.com</text>
-</svg>

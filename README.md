@@ -1,154 +1,98 @@
-# hermes-paperclip-on-hostinger
+# paperclip-hermes-codex — v1 단일 컨테이너
 
-[Hermes Agent](https://github.com/NousResearch/hermes-agent)와 [Paperclip](https://www.hostinger.com/kr/vps/docker/paperclip)을 **사이드카로 묶어** 한 Docker 브리지 네트워크에서 같이 띄우는 OSS 스택입니다. 두 시스템이 호스트 IP·외부 토큰 교환 없이 `http://paperclip:3100`, `http://hermes-dashboard:9119`로 직접 통신할 수 있어, Paperclip이 작업을 분배하고 Hermes가 실행하는 **에이전트 오케스트레이션 파이프라인**을 한 인스턴스에서 운영할 수 있습니다.
+Paperclip(작업 분배·승인 워크플로) + Hermes(에이전트 런타임) + Codex(LLM 오케스트레이터)를
+**단일 컨테이너**에 통합한 OSS 스택입니다. GitHub Actions nightly 빌드로 세 도구의 최신 버전이
+자동으로 이미지에 반영되며, Hostinger 콘솔 "업데이트" 버튼 한 번으로 즉시 적용됩니다.
+첫 부팅 시 ADMIN_* 환경변수로 Paperclip·Hermes 계정이 자동 생성되고, Codex OAuth 인증은
+컨테이너 로그에 출력된 URL로 브라우저 1회만 처리하면 됩니다.
 
-원본 이미지는 그대로 사용합니다 (포크 없음):
-- `ghcr.io/hostinger/hvps-hermes-agent:latest`
-- `ghcr.io/hostinger/hvps-paperclip:latest`
+> **Repo rename pending:** This repo will be renamed to `dandacompany/paperclip-hermes-codex-on-hostinger`
+> after PR 5 merges. Raw URLs still using the old repo name (`hermes-paperclip-on-hostinger`)
+> will 404 after the rename. Update any bookmarked raw URLs to the new path.
 
-> **Apple Silicon Mac 사용자**: 두 이미지는 amd64-only라 Docker Desktop의 Rosetta 2 emulation으로 돕니다. Settings → General → "Use Rosetta for x86_64/amd64 emulation on Apple Silicon" 체크 (Docker Desktop 4.16+). compose 파일에 `platform: linux/amd64`가 박혀 있어 자동 처리됩니다.
+---
 
 ## 3가지 인터페이스
 
-| 인터페이스 | 컨테이너 포트 | 인증 | 용도 |
+| 인터페이스 | 포트 | 인증 방식 | 용도 |
 |---|---|---|---|
-| **Hermes Dashboard** | 9119 | Hermes 자체 세션 토큰 | 그래픽 SPA — Sessions / API Keys / Skills 관리 |
-| **Hermes TUI** | 4860 | ttyd HTTP Basic Auth | 브라우저 안의 터미널 콘솔 |
-| **Paperclip Web** | 3100 | Paperclip 자체 sign-up + 쿠키 세션 | 작업·라우틴·승인 워크플로 |
+| Paperclip Web | 3100 | Paperclip sign-up + 쿠키 세션 | 작업 라우팅·승인 워크플로 |
+| Hermes Dashboard | 9119 | Hermes 세션 토큰 (ADMIN_* 자동 생성) | SPA — Sessions / API Keys / Skills 관리 |
+| Hermes TUI | 4860 | ttyd HTTP Basic Auth (ADMIN_* 공용) | 브라우저 안의 터미널 콘솔 |
 
-## 4가지 노출 모드
+---
 
-한 저장소에서 `COMPOSE_FILE` 오버레이로 전환합니다. 개인·팀 비공개 운영이 기본 가정이라 **tailscale**이 권장 디폴트.
+## 2가지 노출 모드
 
-| 모드 | 어디서 쓰나 | 본인 호스트 | 외부 접근 | 도메인·TLS |
-|---|---|---|:-:|:-:|
-| **tailscale** ★ | 개인·팀 비공개 (로컬·VPS 공통) | `127.0.0.1` 직접 | Tailscale 메시 멤버만 | `.ts.net` 자동 |
-| **local** | 본인만 사용, 외부 차단 | `127.0.0.1` 직접 | ❌ | 불필요 |
-| **traefik** | 공개 SaaS, 도메인+공인 IP 있는 VPS | (포트 노출 없음) | 누구나 (HTTPS+Basic Auth) | 필요 (3개 서브) + LE 자동 |
-| **cloudflared** | NAT 뒤 노트북, DDoS·IP숨김 원할 때 | (포트 노출 없음) | Cloudflare Access 정책 | 필요 (3개 서브) + CF 자동 |
+| 모드 | 바인딩 | 외부 접근 | TLS |
+|---|---|---|---|
+| local | 127.0.0.1 (포트 3100/9119/4860) | 불가 | 불필요 |
+| tailscale | 컨테이너 내부망 (tailscale 사이드카) | Tailscale 메시 멤버만 | .ts.net 자동 HTTPS |
 
-각 모드의 상세는 [`docs/EXPOSURE-tailscale.md`](docs/EXPOSURE-tailscale.md) · [`traefik`](docs/EXPOSURE-traefik.md) · [`cloudflared`](docs/EXPOSURE-cloudflared.md).
+---
 
-## 빠른 설치
+## 빠른 설치 (Hostinger 콘솔)
 
-### Tailscale 모드 (권장 — 로컬·VPS 공통)
+1. Hostinger VPS 패널 -> Docker Manager -> "URL에서 컴포즈 가져오기"
+2. `docker-compose.console.yml` Raw URL 붙여넣기
+3. 환경변수 폼에서 값 입력 (ADMIN_EMAIL, ADMIN_PASSWORD 필수; 나머지는 기본값 사용 가능)
+4. "배포" 클릭 -> 컨테이너 로그에서 Codex OAuth URL 확인 -> 브라우저 인증 1회
 
-전제: [Tailscale](https://tailscale.com) 가입 (개인 무료, 100 디바이스). 사용자 본인과 공유할 사람들의 디바이스에 Tailscale 클라이언트 깔려 있음.
+완료 후 `http://<VPS-IP>:3100` 으로 Paperclip에 접속합니다.
 
-```bash
-# 1. https://login.tailscale.com/admin/settings/keys 에서 auth key 발급
-git clone https://github.com/dandacompany/hermes-paperclip-on-hostinger.git
-cd hermes-paperclip-on-hostinger
-MODE=tailscale TS_AUTHKEY=tskey-auth-... ADMIN_EMAIL=you@example.com ./setup.sh
-docker compose up -d
-```
+---
 
-접근 경로:
-- **본인 호스트** (노트북이든 VPS든 같음): `http://127.0.0.1:9119` / `:4860` / `:3100`
-- **메시 멤버** (모바일·동료): `https://<TS_HOSTNAME>.<your-tailnet>.ts.net:9119` / `:4860` / `:3100`
-
-> 본인 호스트는 Tailscale 클라이언트가 깔려 있을 필요 없습니다 — 그냥 자기 컨테이너에 localhost로 직접 접근. 메시는 외부 접근 전용. macOS Docker Desktop도 동일하게 작동.
-
-### 로컬 모드 (외부 차단, 본인만)
+## 빠른 설치 (로컬 / SSH)
 
 ```bash
+git clone https://github.com/dandacompany/paperclip-hermes-codex-on-hostinger.git
+cd paperclip-hermes-codex-on-hostinger
+
+# local 모드 (127.0.0.1 바인딩, 외부 차단)
 MODE=local ADMIN_EMAIL=you@example.com ./setup.sh
+
+# .env 검토 후 실행
 docker compose up -d
 ```
 
-`http://127.0.0.1:{9119,4860,3100}` — LAN조차 안 보임.
-
-### 공개 모드 (Traefik 또는 Cloudflare Tunnel)
-
-공개 SaaS로 띄우거나 외부 클라이언트 접근이 필요한 경우. 자세한 흐름은 각 docs:
-- [`docs/EXPOSURE-traefik.md`](docs/EXPOSURE-traefik.md) — Hostinger VPS 등 Traefik 있는 서버
-- [`docs/EXPOSURE-cloudflared.md`](docs/EXPOSURE-cloudflared.md) — NAT 뒤·DDoS 보호·CF Access
-
-## 구성 한눈에
-
-```
-                ┌──── exposure (mode-dependent) ────┐
-                │                                   │
-        Traefik / Cloudflare Tunnel / 127.0.0.1
-                │                                   │
-   ┌────────────┼──────────────────┬────────────────┤
-   │            │                  │                │
-hermes-tui   hermes-dashboard   paperclip       (gateway, opt-in)
- :4860        :9119              :3100              ―
-   │            │                  │                │
-   └─── hermes-data (vol) ─────────┤                │
-                                   └── paperclip-data (vol)
-
-   ────── shared bridge network (hermes-paperclip_net) ──────
-            └ hermes containers can call http://paperclip:3100
-            └ paperclip can call http://hermes-dashboard:9119
-```
-
-## 인증 모델
-
-각 시스템이 **자체 인증을 가짐**. 추가 reverse-proxy basic-auth는 기본값으로 안 붙입니다 — 사용자 경험 일관성 + 이중 로그인 회피.
-
-- **Paperclip**: 첫 실행 시 `ADMIN_EMAIL/PASSWORD`로 자동 sign-up, 그 이후 쿠키 세션
-- **Hermes Dashboard**: HTML에 주입되는 `__HERMES_SESSION_TOKEN__` 단방향 토큰 + API 검증
-- **Hermes TUI (ttyd)**: HTTP Basic Auth (ttyd 옵션 `-c USER:PASS`)
-
-> Hermes Dashboard가 공개 도메인에 노출될 때 추가 가드가 필요하면 [docs/EXPOSURE-traefik.md](docs/EXPOSURE-traefik.md)에 Traefik basic-auth middleware 적용 예시가 있습니다.
-
-## 사이드카가 주는 이득
-
-같은 Docker 브리지 네트워크 안에 있으니:
-
-- Paperclip이 heartbeat 시 주입하는 짧은 JWT(`PAPERCLIP_API_KEY`)만으로 Hermes 컨테이너가 `http://paperclip:3100/api/...` 직접 호출
-- Hermes가 작업 결과를 Paperclip의 task comment로 거꾸로 post
-- 토큰 교환·OAuth flow 없이 single-tenant 자가 호스팅에 최적
-- 두 데이터 볼륨(`hermes-data`, `paperclip-data`)이 독립적이라 한 쪽 재설치가 다른 쪽에 영향 없음
-
-## 메시징 게이트웨이 (옵션)
-
-Hermes가 Slack/Telegram/Discord에 응답하도록 하려면:
-
-1. Dashboard 또는 TUI에서 `hermes setup` 한 번 실행 (config.yaml 생성)
-2. 게이트웨이 enable:
-   ```bash
-   docker compose --profile gateway up -d
-   ```
-
-중지: `docker compose --profile gateway down`
-
-## 비밀번호 회전
+tailscale 모드를 사용하려면:
 
 ```bash
-./setup.sh --rotate
-docker compose up -d --force-recreate hermes-tui hermes-dashboard paperclip
+MODE=tailscale TS_AUTHKEY=tskey-auth-... TS_HOSTNAME=paperclip ./setup.sh
+docker compose up -d
 ```
 
-## 기여자용 — pre-commit hook
+---
 
-이 저장소는 [pre-commit](https://pre-commit.com) + [gitleaks](https://github.com/gitleaks/gitleaks) 로 commit 단에서 비밀값 노출을 차단합니다. 처음 clone 한 뒤 한 번만 설치:
+## 업데이트
+
+**Hostinger 콘솔:** Docker Manager -> 서비스 선택 -> "업데이트" 버튼 클릭.
+최신 이미지를 pull하고 컨테이너를 재시작합니다.
+volume에 살아있는 인증·세션이 그대로 유지됩니다.
+
+**로컬 / SSH:**
 
 ```bash
-brew install pre-commit          # macOS, 또는 pip install pre-commit
-pre-commit install               # .git/hooks/pre-commit 활성화
+docker compose pull
+docker compose up -d
 ```
 
-전체 트리 검사는:
+---
+
+## v0.1 사이드카 구조 사용자
+
+사이드카(2-컨테이너) 구조의 v0.1 태그는 별도로 유지됩니다:
 
 ```bash
-pre-commit run --all-files
+git checkout v0.1-sidecar
 ```
 
-룰셋은 [.gitleaks.toml](.gitleaks.toml) — 기본 detector + Tailscale auth key, APR1 hash, 32자 평문 패스워드 패턴을 추가로 차단합니다. 같은 검사가 GitHub Actions 의 `gitleaks` job 에서도 돕니다.
+v0.1 -> v1 마이그레이션 절차는 `docs/MIGRATION-v0.1-to-v1.md` 를 참조하세요.
 
-## 라이선스
+---
 
-MIT. 두 원본 이미지(Hermes / Paperclip)의 라이선스는 각자 제작사를 따릅니다 — 이 저장소는 이미지를 재배포하지 않고 **사용 방법(사이드카 구성)만** 배포합니다.
+## 참고
 
-## 문서
-
-- **[docs/tutorial-hermes-paperclip-on-hostinger/](docs/tutorial-hermes-paperclip-on-hostinger/)** — 한 페이지 정적 HTML 튜토리얼: SSH·CLI 기준 (Tailscale 모드, 8-step)
-- **[docs/tutorial-hostinger-console/](docs/tutorial-hostinger-console/)** — 한 페이지 정적 HTML 튜토리얼: Hostinger 웹 콘솔 기준 (Docker Manager → URL 에서 컴포즈 가져오기, 8-step, SSH 불필요)
-- **[docker-compose.console.yml](docker-compose.console.yml)** — Hostinger Docker Manager 의 "URL 에서 컴포즈 가져오기" 용 self-contained 컴포즈. Raw URL: `https://raw.githubusercontent.com/dandacompany/hermes-paperclip-on-hostinger/main/docker-compose.console.yml`
-- [docs/EXPOSURE-tailscale.md](docs/EXPOSURE-tailscale.md) — Tailscale 메시 VPN 매뉴얼 (권장 디폴트)
-- [docs/EXPOSURE-traefik.md](docs/EXPOSURE-traefik.md) — Traefik 모드 상세 (Hostinger VPS 워크스루)
-- [docs/EXPOSURE-cloudflared.md](docs/EXPOSURE-cloudflared.md) — Cloudflare Tunnel 설정
-- [docs/INTEGRATION.md](docs/INTEGRATION.md) — Hermes ↔ Paperclip 연동 패턴
+- 구현 플랜: `docs/superpowers/plans/2026-05-17-paperclip-hermes-codex-implementation.md`
+- 설계 스펙: `docs/superpowers/specs/2026-05-17-paperclip-hermes-codex-design.md`
+- 라이선스: MIT (v0.1과 동일)
