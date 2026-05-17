@@ -486,13 +486,14 @@ openssl rand -base64 32 | tr -d '/+=' | head -c 32 ; echo
                 "한 줄 실행. 출력의 <code>Invite URL: https://&lt;Full-domain&gt;:3100/invite/pcp_bootstrap_…</code> 를 그대로 복사해 브라우저에 붙여넣기. "
                 "07-2b 에서 PAPERCLIP_PUBLIC_URL 을 메시 도메인으로 갱신해 두었기 때문에 invite URL 이 처음부터 메시 도메인으로 발급됩니다.",
             ),
+            figure_block("12-paperclip-rotate-terminal.png", "paperclip 컨테이너의 콘솔 터미널 — paperclipai auth bootstrap-ceo 실행 후 출력된 'Created bootstrap CEO invite' 와 새 Invite URL · 만료 시각."),
             note_block(
                 "07-6b. 첫 부팅 invite 만 필요하다면 — Logs 뷰",
                 "처음 부팅 직후의 invite URL 만 다시 보고 싶다면 같은 컨테이너 카드의 <strong>Logs</strong> 를 열어 "
                 "검색(Cmd+F / Ctrl+F) 으로 <code>Invite URL</code> 을 찾습니다. "
                 "단, CLI 로 rotate 한 invite 는 명령 output 으로만 표시되어 Logs 에 안 찍히므로, rotate 시나리오에는 위 터미널 흐름을 쓰세요.",
             ),
-            figure_block("12-paperclip-workspace.png", "Paperclip admin sign-up 완료 후 워크스페이스 메인 또는 sign-in 페이지."),
+            figure_block("13-paperclip-workspace.png", "Paperclip admin sign-up 완료 후 워크스페이스 메인 또는 sign-in 페이지."),
             note_block(
                 "07-7. PAPERCLIP_PUBLIC_URL 의 역할 정리",
                 "07-2b 에서 갱신한 <code>PAPERCLIP_PUBLIC_URL</code> 한 값이 다음 네 군데를 동시에 결정합니다. "
