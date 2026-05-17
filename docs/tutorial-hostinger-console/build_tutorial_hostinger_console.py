@@ -493,7 +493,6 @@ openssl rand -base64 32 | tr -d '/+=' | head -c 32 ; echo
                 "검색(Cmd+F / Ctrl+F) 으로 <code>Invite URL</code> 을 찾습니다. "
                 "단, CLI 로 rotate 한 invite 는 명령 output 으로만 표시되어 Logs 에 안 찍히므로, rotate 시나리오에는 위 터미널 흐름을 쓰세요.",
             ),
-            figure_block("13-paperclip-workspace.png", "Paperclip admin sign-up 완료 후 워크스페이스 메인 또는 sign-in 페이지."),
             note_block(
                 "07-7. PAPERCLIP_PUBLIC_URL 의 역할 정리",
                 "07-2b 에서 갱신한 <code>PAPERCLIP_PUBLIC_URL</code> 한 값이 다음 네 군데를 동시에 결정합니다. "
