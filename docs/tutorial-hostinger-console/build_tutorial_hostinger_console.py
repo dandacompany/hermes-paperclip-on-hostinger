@@ -384,7 +384,7 @@ openssl rand -base64 32 | tr -d '/+=' | head -c 32 ; echo
     {
         "num": "06",
         "title": "Deploy + 컨테이너 상태 확인",
-        "lede": "Deploy 버튼을 누르고 Docker Manager 페이지에서 컨테이너 6개가 차례로 올라오는지 확인합니다.",
+        "lede": "Deploy 후 Docker Manager 에 컨테이너 카드 6장이 뜹니다. 4장은 Running, 2장은 Exited 가 정상 상태입니다.",
         "blocks": [
             note_block(
                 "06-1. Deploy",
@@ -392,10 +392,10 @@ openssl rand -base64 32 | tr -d '/+=' | head -c 32 ; echo
                 "Hostinger 가 이미지를 pull 하고 컨테이너 6개를 띄웁니다 (약 1~3분, 첫 pull 일수록 더 걸림).",
             ),
             note_block(
-                "06-2. 정상 부팅 시 상태",
-                "Docker Manager 의 컨테이너 목록에서 다음을 확인합니다. "
-                "<code>hermes-init</code> · <code>paperclip-init</code> — Exited (정상 종료). "
-                "<code>hermes-tui</code> · <code>hermes-dashboard</code> · <code>paperclip</code> · <code>tailscale</code> — Running.",
+                "06-2. 정상 부팅 시 상태 — 4 Running + 2 Exited",
+                "<strong>Running 4 개</strong> · <code>hermes-tui</code> (ttyd 콘솔), <code>hermes-dashboard</code> (Hermes 그래픽 UI), <code>paperclip</code> (Paperclip 워크플로 UI), <code>tailscale</code> (메시 게이트웨이). "
+                "<strong>Exited 2 개</strong> · <code>hermes-init</code> 과 <code>paperclip-init</code> 은 데이터 볼륨 소유권을 한 번 정리하고 종료하도록 설계된 init 컨테이너입니다 — Exited 가 정상 상태이며 종료 코드는 <code>0</code> 입니다. "
+                "init 이 정상 종료해야 의존성 조건(<code>service_completed_successfully</code>)을 통해 나머지 4 개가 부팅됩니다.",
             ),
             note_block(
                 "06-3. 첫 부팅에서 Paperclip 이 재시작 루프인 경우",
@@ -409,7 +409,7 @@ openssl rand -base64 32 | tr -d '/+=' | head -c 32 ; echo
                 "<em>Switching ipn state Starting -> Running</em> 과 "
                 "<em>serve: creating a new proxy handler for http://hermes-dashboard:9119</em> 등 3개의 proxy handler 로그를 확인합니다.",
             ),
-            figure_block("06-containers.png", "6개 컨테이너가 모두 부팅된 Docker Manager 화면 (init 2개 Exited, 나머지 4개 Running)."),
+            figure_block("06-containers.png", "컨테이너 카드 6 장 — 빨간 박스 안의 Running 4 개와 Exited 2 개 (init 컨테이너가 초기화 작업 후 자동 종료된 상태). Exited 옆에 음수 종료 코드가 없다면 정상."),
             figure_block("07-logs.png", "tailscale 사이드카 컨테이너의 Logs 뷰 — serve 라우팅 3건 적용 로그."),
         ],
     },
