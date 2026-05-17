@@ -410,7 +410,7 @@ openssl rand -base64 32 | tr -d '/+=' | head -c 32 ; echo
                 "<em>serve: creating a new proxy handler for http://hermes-dashboard:9119</em> 등 3개의 proxy handler 로그를 확인합니다.",
             ),
             figure_block("06-containers.png", "컨테이너 카드 6 장 — 빨간 박스 안의 Running 4 개와 Exited 2 개 (init 컨테이너가 초기화 작업 후 자동 종료된 상태). Exited 옆에 음수 종료 코드가 없다면 정상."),
-            figure_block("07-logs.png", "tailscale 사이드카 컨테이너의 Logs 뷰 — serve 라우팅 3건 적용 로그."),
+            figure_block("07-logs.png", "컨테이너 카드의 터미널/Logs 버튼으로 본 부팅 로그. 위 hermes-tui 의 ttyd 4860 LISTEN, 아래 paperclip 의 bootstrap CEO invite URL · PostgreSQL ready · plugin coordinator 시작."),
         ],
     },
     {
@@ -466,7 +466,8 @@ openssl rand -base64 32 | tr -d '/+=' | head -c 32 ; echo
                 "08-2. Paperclip 첫 로그인",
                 "Paperclip URL (<code>:3100</code>) 로 들어가 sign-in 폼에 "
                 "<code>ADMIN_EMAIL</code> 과 <code>ADMIN_PASSWORD</code> (5단계에서 입력한 값) 를 넣습니다. "
-                "첫 로그인 시 admin 계정이 자동 생성됩니다.",
+                "첫 로그인 시 admin 계정이 자동 생성됩니다. "
+                "Paperclip 컨테이너 로그 상단에 <code>pcp_bootstrap_…</code> 로 시작하는 일회용 admin invite URL 이 한 번 찍히는데, 첫 로그인이 끝나면 즉시 소진됩니다 — 외부에 공유하지 마세요.",
             ),
             table(
                 [

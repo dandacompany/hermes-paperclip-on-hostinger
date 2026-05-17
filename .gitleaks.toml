@@ -35,6 +35,12 @@ description = "Literal ADMIN_PASSWORD value (32+ char alphanumeric) on assignmen
 regex = '''(?i)admin_password\s*[:=]\s*['"]?([A-Za-z0-9]{30,})['"]?'''
 tags = ["password", "high-entropy"]
 
+[[rules]]
+id = "paperclip-bootstrap-invite"
+description = "Paperclip first-boot admin invite token (pcp_bootstrap_*)"
+regex = '''pcp_bootstrap_[a-f0-9]{32,}'''
+tags = ["paperclip", "secret"]
+
 # ── Allow-list ────────────────────────────────────────────────
 
 [allowlist]
