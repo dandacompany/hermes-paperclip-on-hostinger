@@ -1,0 +1,31 @@
+# Pre-commit hooks for this repo.
+# Setup once per checkout:
+#   pip install pre-commit              # or: brew install pre-commit
+#   pre-commit install
+# Run manually across the whole tree:
+#   pre-commit run --all-files
+
+repos:
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.20.1
+    hooks:
+      - id: gitleaks
+        # Uses .gitleaks.toml at repo root for our custom patterns
+        # layered on top of the built-in detectors (AWS, Slack, GCP, etc.).
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: check-yaml
+        args: ["--unsafe"]   # docker-compose tags are fine
+      - id: check-added-large-files
+        args: ["--maxkb=1024"]
+      - id: detect-private-key
+
+  - repo: https://github.com/koalaman/shellcheck-precommit
+    rev: v0.10.0
+    hooks:
+      - id: shellcheck
+        args: ["--severity=warning"]

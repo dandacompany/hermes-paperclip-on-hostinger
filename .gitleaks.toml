@@ -1,0 +1,64 @@
+# Gitleaks config — layered on top of the built-in rule set (which
+# already catches AWS, Slack xoxb-/xapp-, GCP, GitHub PATs, etc.).
+#
+# Project-specific additions:
+#   - Tailscale auth keys (tskey-auth-...)
+#   - Apache APR1 hashes ($apr1$...) — Traefik basic-auth output
+#   - High-entropy strings on lines that look like password values
+#
+# Anything inside MASK_PATTERNS placeholders or known-fake stubs is
+# explicitly allow-listed.
+
+title = "hermes-paperclip-on-hostinger gitleaks config"
+
+[extend]
+# Inherit all default rules: https://github.com/gitleaks/gitleaks/blob/master/config/gitleaks.toml
+useDefault = true
+
+# ── Project-specific rules ────────────────────────────────────
+
+[[rules]]
+id = "tailscale-auth-key"
+description = "Tailscale reusable / one-off auth key"
+regex = '''tskey-auth-[A-Za-z0-9-]{20,}'''
+tags = ["tailscale", "secret"]
+
+[[rules]]
+id = "apache-apr1-hash"
+description = "Apache APR1 password hash (Traefik basic-auth output)"
+regex = '''\$apr1\$[A-Za-z0-9./]+\$[A-Za-z0-9./]{20,}'''
+tags = ["traefik", "secret"]
+
+[[rules]]
+id = "admin-password-literal"
+description = "Literal ADMIN_PASSWORD value (32+ char alphanumeric) on assignment"
+regex = '''(?i)admin_password\s*[:=]\s*['"]?([A-Za-z0-9]{30,})['"]?'''
+tags = ["password", "high-entropy"]
+
+# ── Allow-list ────────────────────────────────────────────────
+
+[allowlist]
+description = "Placeholders, masked tokens, CI stubs, fingerprint examples"
+regexes = [
+  # Placeholder shapes the tutorials intentionally print
+  '''XXXXXXXXXXXX''',
+  '''tskey-auth-<TS_AUTHKEY>''',
+  '''tskey-auth-XXXXXXXXXXXX''',
+  '''tskey-auth-placeholder''',
+  '''xoxb-<SLACK_TOKEN>''',
+  '''xapp-<SLACK_APP_TOKEN>''',
+  '''sk-<API_KEY>''',
+  '''\$apr1\$<APR1_HASH>''',
+  '''\$apr1\$mm7dUVrC\$C2dZKTa\.NSX1K4Do08bHQ1''',    # textbook example in docs
+  '''ci-placeholder-password-32chars-XX''',
+  '''ci-32xxxxxxxxxxxxxxxxxxxxxxxxxxxx''',
+  # Generated/non-secret 32-char IDs in docs (UUIDs, dummy session IDs)
+  '''__HERMES_SESSION_TOKEN__''',
+]
+paths = [
+  # Build artefacts and tests should not be scanned for project rules
+  '''docs/tutorial-.*/tutorial-.*\.html''',
+  # Lock files and similar
+  '''package-lock\.json''',
+  '''yarn\.lock''',
+]

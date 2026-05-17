@@ -122,6 +122,23 @@ Hermes가 Slack/Telegram/Discord에 응답하도록 하려면:
 docker compose up -d --force-recreate hermes-tui hermes-dashboard paperclip
 ```
 
+## 기여자용 — pre-commit hook
+
+이 저장소는 [pre-commit](https://pre-commit.com) + [gitleaks](https://github.com/gitleaks/gitleaks) 로 commit 단에서 비밀값 노출을 차단합니다. 처음 clone 한 뒤 한 번만 설치:
+
+```bash
+brew install pre-commit          # macOS, 또는 pip install pre-commit
+pre-commit install               # .git/hooks/pre-commit 활성화
+```
+
+전체 트리 검사는:
+
+```bash
+pre-commit run --all-files
+```
+
+룰셋은 [.gitleaks.toml](.gitleaks.toml) — 기본 detector + Tailscale auth key, APR1 hash, 32자 평문 패스워드 패턴을 추가로 차단합니다. 같은 검사가 GitHub Actions 의 `gitleaks` job 에서도 돕니다.
+
 ## 라이선스
 
 MIT. 두 원본 이미지(Hermes / Paperclip)의 라이선스는 각자 제작사를 따릅니다 — 이 저장소는 이미지를 재배포하지 않고 **사용 방법(사이드카 구성)만** 배포합니다.

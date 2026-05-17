@@ -68,4 +68,16 @@ jobs:
             docker-compose.tailscale.yml \
             docker-compose.traefik.yml \
             docker-compose.cloudflared.yml \
+            docker-compose.console.yml \
             .github/workflows/ci.yml || true
+
+  gitleaks:
+    name: gitleaks (secret scan)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITLEAKS_CONFIG: .gitleaks.toml
