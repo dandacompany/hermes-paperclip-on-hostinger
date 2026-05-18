@@ -128,23 +128,75 @@ http://paperclip-<random>.<vps-hostname>.hstgr.cloud
 
 ### Tailscale 설치 + 인증 (host-level)
 
+Paperclip을 인터넷 전체에 노출하지 않고 본인 Tailscale 메시 멤버만 접근 가능하게 만듭니다. 본인의 모든 디바이스(노트북·핸드폰)도 같은 tailnet에 가입돼 있어야 브라우저로 접속 가능.
+
+#### 2-1. Tailscale 계정 + auth key 발급
+
+1. https://login.tailscale.com 가입 (Google·Microsoft·GitHub OAuth 또는 이메일).
+2. 가입 후 좌측 `Settings → Keys → Generate auth key`
+3. 옵션:
+   - **Reusable**: ✓ (여러 디바이스 인증에 한 키 재사용)
+   - **Expiration**: 90 days 또는 그 이하 (보안)
+   - **Tags**: `tag:paperclip` (선택 — ACL용)
+4. 생성된 `tskey-auth-...`를 **클립보드에 복사** (1회만 표시됨)
+
+#### 2-2. VPS host에 Tailscale 설치 + 인증
+
 ```bash
 ssh root@<vps-ip>
 curl -fsSL https://tailscale.com/install.sh | sh
 systemctl enable --now tailscaled
 
-# Tailscale admin에서 reusable auth key 발급 후
+# 위에서 복사한 auth key 사용
 tailscale up --authkey=tskey-auth-... --hostname=paperclip-hostinger --ssh
 
-tailscale status --peers=false --json | jq '.Self.DNSName'
+# 본 VPS의 tailnet FQDN을 확보
+tailscale status --peers=false --json | jq -r '.Self.DNSName' | sed 's/\.$//'
 ```
 
 기대 출력:
 ```
-"paperclip-hostinger.tail7b1307.ts.net."
+paperclip-hostinger.tail7b1307.ts.net
 ```
 
-이 FQDN을 이후 단계에서 사용.
+→ `<hostname>.<tailnet>.ts.net` 형식. `paperclip-hostinger` 부분은 `--hostname`으로 명시한 값, `tail7b1307`은 **계정마다 다른 tailnet 식별자** (Tailscale admin → DNS → Tailnet name에서 확인 가능).
+
+이 FQDN을 **이후 모든 단계에서 사용**.
+
+#### 2-3. 본인 노트북·휴대폰에 Tailscale 클라이언트 설치
+
+브라우저로 `https://<hostname>.<tailnet>.ts.net/` 접속하려면 본인 디바이스도 같은 tailnet 멤버여야 합니다.
+
+| OS | 설치 |
+|---|---|
+| macOS | https://tailscale.com/download/mac → 앱 store 또는 `.pkg` 설치 |
+| Windows | https://tailscale.com/download/windows |
+| iOS | App Store에서 "Tailscale" |
+| Android | Play Store에서 "Tailscale" |
+| Linux (laptop) | `curl -fsSL https://tailscale.com/install.sh \| sh && tailscale up` |
+
+설치 후 같은 Tailscale 계정으로 로그인. macOS 메뉴바·Windows 트레이의 Tailscale 아이콘이 초록색이면 연결됨.
+
+#### 2-4. 접속 검증
+
+본인 노트북에서:
+
+```bash
+# 1) Tailscale이 VPS를 peer로 인식하나
+tailscale status | grep paperclip-hostinger
+# → 100.x.x.x  paperclip-hostinger  dante@...  linux  -
+
+# 2) 호스트네임이 100.x로 resolve되나
+ping -c 1 paperclip-hostinger.tail7b1307.ts.net
+# → 100.120.195.40 응답
+
+# 3) HTTPS Magic cert가 잡히나 (paperclip 띄우기 전이면 connection refused 정상)
+curl -I https://paperclip-hostinger.tail7b1307.ts.net/
+```
+
+3개 모두 응답이 오면 OK. STEP 03 이후 paperclip을 Tailscale로 노출하면 같은 URL이 paperclip UI로 연결됩니다.
+
+> ⚠️ **HTTP IP+port 직접 접근(`http://<vps-ip>:54748/`)은 작동하지 않습니다.** Paperclip의 better-auth가 `PAPERCLIP_PUBLIC_URL` 외 origin을 차단해 로그인 시도 시 401/403 (Troubleshooting T9 참고). 반드시 `https://<hostname>.<tailnet>.ts.net/`로 접속.
 
 ---
 
@@ -360,7 +412,24 @@ Provider:     OpenAI Codex
 
 Paperclip은 vanilla 설치에서 자동 company를 만들지 않음. 첫 사용 시 만들어야.
 
-**브라우저 path**: `https://<host>.<tailnet>.ts.net/` 접속 → "Create company" 입력 → CEO agent 추가 시 Hermes Agent 어댑터 선택.
+**브라우저 path** (권장):
+
+1. **본인 노트북에서 Tailscale 클라이언트가 켜진 상태로** (STEP 2-3·2-4 완료)
+2. 브라우저 주소창에 `https://<hostname>.<tailnet>.ts.net/` 입력
+   - 예: `https://paperclip-hostinger.tail7b1307.ts.net/`
+   - HTTPS magic cert 자동 발급되어 잠금 아이콘 정상
+3. Sign-in 화면 → STEP 01에서 입력한 admin 이메일·비밀번호로 로그인
+4. 상단 "Create company" → 회사명 입력 → 생성
+5. 좌측 nav → Agents → "Create agent" → 입력:
+   - Name: `CEO`
+   - Role: `ceo`
+   - Adapter: **Hermes Agent**
+   - Model: 비워둠 (Hermes config의 default `gpt-5.5` 자동 사용)
+   - Provider: 비워둠 (`openai-codex` 자동)
+   - Timeout (seconds): `900`
+   - Effort / Reasoning: `medium`
+
+> ⚠️ `http://<vps-ip>:54748/`로 접속하면 sign-in form은 뜨지만 **로그인 시 401/403** 발생 — `PAPERCLIP_PUBLIC_URL`이 Tailscale FQDN으로 설정돼 그 외 origin은 better-auth가 차단. 반드시 Tailscale FQDN URL 사용.
 
 **또는 API path** (스크립트화):
 
@@ -594,6 +663,25 @@ tailscale serve status
 
 **해결**: STEP 08의 3줄 config set. `hermes status`에서 Model/Provider가 정확히 나오는지 확인.
 
+### T9. 브라우저에서 `http://<vps-ip>:54748/` → sign-in 후 401/403 (`/api/companies` Forbidden 등)
+
+원인: paperclip의 better-auth가 `PAPERCLIP_PUBLIC_URL` origin만 trusted. STEP 03에서 그 값을 `https://<host>.<tailnet>.ts.net`로 set했으므로 **IP+port HTTP 직접 접근은 cross-origin으로 차단**.
+
+**해결**:
+1. 본인 노트북에 Tailscale 클라이언트 설치 + 같은 tailnet 로그인 (STEP 2-3).
+2. 브라우저로 `https://<hostname>.<tailnet>.ts.net/` 접속 (STEP 2-4 검증한 그 URL).
+3. 그 origin에서는 sign-in cookie가 정상 발급되고 모든 `/api/*`도 통과.
+
+만약 IP+port를 굳이 노출하고 싶다면 `.env`의 `PAPERCLIP_PUBLIC_URL`을 IP 형식으로 변경 + `docker compose up -d --force-recreate`. 단 인터넷 전체 노출이라 권장 안 함.
+
+### T10. `tailscale status`에 VPS는 보이는데 `https://...ts.net/`이 안 열림
+
+원인: 본인 디바이스 Tailscale이 *running*이지만 *DNS 옵션*이 꺼져 있으면 `.ts.net` 호스트네임이 OS resolver로 안 빠짐.
+
+**해결** (macOS):
+- Tailscale 메뉴바 아이콘 → Preferences → **"Use Tailscale DNS"** 체크.
+- 또는 직접 IP로: `tailscale status | grep paperclip-hostinger`의 100.x.x.x로 `https://100.x.x.x/` (단 magic cert는 hostname 기준이라 cert warning 발생 — 가능하면 DNS 옵션 활성).
+
 ---
 
 ## Codex CLI 위임 프롬프트
@@ -729,7 +817,7 @@ body:
 
 ---
 
-## 부록 — 발견된 8개 함정 요약표
+## 부록 — 발견된 10개 함정 요약표
 
 | # | 증상 | 원인 | 해결 위치 |
 |---|---|---|---|
@@ -741,3 +829,5 @@ body:
 | T6 | PAPERCLIP_PUBLIC_URL 갱신 안 됨 | hard-coded env in compose | sed `${VAR:-...}` |
 | T7 | model=anthropic/claude-sonnet-4 spawn | adapter v0.2.1 DEFAULT_MODEL fallback | init.sh sed patch (mirror PR #123) |
 | T8 | "Hermes isn't configured" | hermes config 미설정 | hermes config set 3줄 |
+| T9 | IP:port HTTP 접속 시 401/403 | PAPERCLIP_PUBLIC_URL과 origin 불일치 | Tailscale FQDN으로 접속 (STEP 2-3·2-4) |
+| T10 | `.ts.net` 도메인 안 열림 | 본인 디바이스 Tailscale DNS 옵션 OFF | Tailscale 설정 "Use Tailscale DNS" 체크 |
