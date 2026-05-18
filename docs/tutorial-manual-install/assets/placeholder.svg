@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="460" viewBox="0 0 820 460">
+  <rect width="820" height="460" fill="#ebe5d8"/>
+  <rect x="1" y="1" width="818" height="458" fill="none" stroke="#c8c4bc" stroke-width="2" stroke-dasharray="8,4"/>
+  <text x="410" y="200" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="13" fill="#777777">PLACEHOLDER</text>
+  <text x="410" y="224" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="#999999">Screenshot will be added here</text>
+  <rect x="360" y="248" width="100" height="2" fill="#c8c4bc"/>
+  <text x="410" y="272" id="fn" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="#b84a2c">screenshot.png</text>
+</svg>
