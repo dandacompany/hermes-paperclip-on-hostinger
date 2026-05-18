@@ -39,6 +39,15 @@ render_step  = _te.render_step
 
 # Resolve placeholder relative to THIS tutorial's BASE
 def figure_block(filename: str, caption: str) -> str:
+    if filename.startswith(("http://", "https://")):
+        src = filename
+        label_html = ""
+        return f"""
+    <figure class="screenshot">
+      <img src="{src}" alt="{esc(caption)}" loading="lazy">
+      <figcaption>{esc(caption)}</figcaption>
+    </figure>
+    """
     asset_dir = BASE / "assets"
     capture_dir = BASE / "captures"
     target_asset = asset_dir / filename
@@ -85,6 +94,10 @@ SECTIONS = [
                     ("Paperclip", "원클릭 컨테이너 — init.sh가 python3·tini 설치, hermes 심볼릭, adapter sed 패치 후 /entrypoint.sh 위임"),
                     ("Hermes + Codex", "data/tools/opt-hermes(read-only bind mount)에서 venv 사용. Codex CLI v0.130은 paperclip 이미지에 이미 번들됨"),
                 ],
+            ),
+            figure_block(
+                "https://storage.googleapis.com/dante-labs-pub/tutorial/paperclip-hermes-codex/01-1-integrated-architecture-chalkboard.png",
+                "통합 구조 한눈에 보기 — Tailscale 데몬 → Paperclip 컨테이너(init.sh 4단계) → Hermes + Codex (Dante Labs Chalkboard 테마)",
             ),
             table(
                 rows=[
